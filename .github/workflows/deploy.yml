@@ -22,7 +22,7 @@ jobs:
         run: yarn install
 
       - name: Compile and package Lambda functions
-        run: bash ./package-lambdas.sh
+        run: bash ../package-lambdas.sh
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
