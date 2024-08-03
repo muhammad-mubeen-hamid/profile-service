@@ -1,0 +1,53 @@
+name: Deploy Profile Service
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Compile and package Lambda functions
+        run: bash package-lambdas.sh
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.MEETMUSLIMS_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.MEETMUSLIMS_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Install AWS CLI
+        uses: aws-actions/setup-cli@v3
+
+      - name: Upload Lambda packages to S3
+        run: |
+          for file in dist/*.zip; do
+            aws s3 cp "$file" s3://${{ secrets.S3_CODE_BUCKET }}/
+          done
+
+      - name: Deploy CloudFormation stack
+        run: |
+          aws cloudformation deploy \
+            --template-file ./infrastructure.yml \
+            --stack-name profile-service \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameter-overrides
+
+      - name: Post-deployment verification
+        run: |
+          aws cloudformation describe-stacks --stack-name ProfileServiceStack

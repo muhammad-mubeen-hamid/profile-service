@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Infrastructure for the profile service'
+
+Resources:
+
+  ### Users Table ###
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Users
+      AttributeDefinitions:
+        - AttributeName: UserId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: UserId
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      Tags:
+        - Key: Environment
+          Value: Production
+
+  ### User Interactions Table ###
+  UserInteractionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: UserInteractions
+      AttributeDefinitions:
+        - AttributeName: UserId
+          AttributeType: S
+        - AttributeName: TargetUserId
+          AttributeType: S
+        - AttributeName: Status
+          AttributeType: S
+      KeySchema:
+        - AttributeName: UserId
+          KeyType: HASH
+        - AttributeName: TargetUserId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: TargetUserIndex
+          KeySchema:
+            - AttributeName: TargetUserId
+              KeyType: HASH
+            - AttributeName: Status
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  ### User Complaints Table ###
+  UserComplaintsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: UserGrievances
+      AttributeDefinitions:
+        - AttributeName: ComplainedUserId
+          AttributeType: S
+        - AttributeName: ComplaintId
+          AttributeType: S
+        - AttributeName: Resolved
+          AttributeType: N
+      KeySchema:
+        - AttributeName: ComplainedUserId
+          KeyType: HASH
+        - AttributeName: ComplaintId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: ResolvedComplaintsIndex
+          KeySchema:
+            - AttributeName: ComplainedUserId
+              KeyType: HASH
+            - AttributeName: Resolved
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+Outputs:
+  UsersTableName:
+    Description: Name of the Users table
+    Value: !Ref UsersTable
+
+  UserInteractionsTableName:
+    Description: Name of the User Interactions table
+    Value: !Ref UserInteractionsTable
+
+  UserComplaintsTableName:
+    Description: Name of the User Complaints table
+    Value: !Ref UserComplaintsTable
+
+
+
