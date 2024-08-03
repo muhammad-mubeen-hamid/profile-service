@@ -31,9 +31,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.MEETMUSLIMS_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Install AWS CLI
-        uses: aws-actions/setup-cli@v3
-
       - name: Upload Lambda packages to S3
         run: |
           for file in dist/*.zip; do
