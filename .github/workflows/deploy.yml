@@ -27,8 +27,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.MEETMUSLIMS_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.MEETMUSLIMS_AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.MARHABA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.MARHABA_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
       - name: Upload Lambda packages to S3
