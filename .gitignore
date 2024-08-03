@@ -1,0 +1,8 @@
+# Miscellaneous
+node_modules
+dist
+
+# IntelliJ related
+*.iml
+.idea/
+
