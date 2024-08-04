@@ -42,8 +42,7 @@ jobs:
           aws cloudformation deploy \
             --template-file ./infrastructure.yml \
             --stack-name profile-service \
-            --capabilities CAPABILITY_NAMED_IAM \
-            --parameter-overrides
+            --capabilities CAPABILITY_NAMED_IAM 
 
       - name: Post-deployment verification
         run: |
