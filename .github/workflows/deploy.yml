@@ -46,4 +46,4 @@ jobs:
 
       - name: Post-deployment verification
         run: |
-          aws cloudformation describe-stacks --stack-name ProfileServiceStack
+          aws cloudformation describe-stacks --stack-name profile-service

@@ -3,6 +3,41 @@ Description: 'Infrastructure for the profile service'
 
 Resources:
 
+  ### roles ###
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CreateProfileLambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecution
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                Resource: !GetAtt UsersTable.Arn
+
   ### Users Table ###
   UsersTable:
     Type: AWS::DynamoDB::Table
@@ -88,6 +123,60 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+
+  ### profile api ###
+  ProfileApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: ProfileApi
+      Description: API for the profile service
+      FailOnWarnings: true
+      EndpointConfiguration:
+        Types:
+          - EDGE
+
+  ### profile api resource ###
+  ProfileResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ProfileApi.RootResourceId
+      PathPart: profile
+      RestApiId: !Ref ProfileApi
+
+  ### profile api method ###
+  ProfileMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref ProfileResource
+      RestApiId: !Ref ProfileApi
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ProfileFunction.Arn}/invocations
+
+
+  ### profile api deployment ###
+  ProfileDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref ProfileApi
+      StageName: prod
+
+  ### create profile ###
+  CreateProfileFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !ImportValue meet-muslims-base-service-lambda-function-profile-bucket
+        S3Key: create-profile.zip
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          DB_TABLE_USERS: !Ref UsersTable
+
 
 Outputs:
   UsersTableName:
