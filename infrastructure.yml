@@ -169,7 +169,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Code:
-        S3Bucket: !ImportValue meet-muslims-base-service-lambda-function-profile-bucket
+        S3Bucket: !ImportValue marhabaah-base-code
         S3Key: create-profile.zip
       Runtime: nodejs20.x
       Role: !GetAtt LambdaExecutionRole.Arn
