@@ -170,6 +170,7 @@ Resources:
   CreateProfileFunction:
     Type: AWS::Lambda::Function
     Properties:
+      Handler: create-profile.handler
       Code:
         S3Bucket: !ImportValue marhabaah-base-code
         S3Key: create-profile.zip
