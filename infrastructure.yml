@@ -173,7 +173,7 @@ Resources:
       Handler: create-profile.handler
       Code:
         S3Bucket: !ImportValue marhabaah-base-code
-        S3Key: create-profile.zip
+        S3Key: !Sub ${AWS::StackName}/create-profile.zip
       Runtime: nodejs20.x
       Role: !GetAtt LambdaExecutionRole.Arn
       Environment:

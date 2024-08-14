@@ -5,6 +5,9 @@ on:
     branches:
       - master
 
+env:
+  SERVICE_NAME: profile-service
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -34,7 +37,7 @@ jobs:
       - name: Upload Lambda packages to S3
         run: |
           for file in dist/*.zip; do
-            aws s3 cp "$file" s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/profile-service/
+            aws s3 cp "$file" s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/${{ env.SERVICE_NAME }}/
           done
 
       - name: Deploy CloudFormation stack
