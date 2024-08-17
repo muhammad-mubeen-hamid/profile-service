@@ -166,6 +166,17 @@ Resources:
       RestApiId: !Ref ProfileApi
       StageName: prod
 
+  ### domain name ###
+  DomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: marhabaah.com
+      EndpointConfiguration:
+        Types:
+          - EDGE
+      RegionalCertificateArn: !ImportValue marhabaah-cert
+      SecurityPolicy: TLS_1_2
+
   ### create profile ###
   CreateProfileFunction:
     Type: AWS::Lambda::Function
