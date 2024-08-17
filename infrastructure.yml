@@ -128,8 +128,8 @@ Resources:
   ProfileApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: ProfileApi
-      Description: API for the profile service
+      Name: !Sub ${AWS::StackName}-api
+      Description: !Sub API for ${AWS::StackName}
       FailOnWarnings: true
       EndpointConfiguration:
         Types:
