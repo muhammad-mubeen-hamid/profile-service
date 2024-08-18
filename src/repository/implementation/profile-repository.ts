@@ -1,15 +1,9 @@
 import { DynamoDB } from 'aws-sdk';
+import {ProfileRepository, UserProfile} from "../interface/profile-interface";
 
 const dynamoDb = new DynamoDB.DocumentClient();
 
-interface UserProfile {
-    username: string;
-    email: string;
-    name: string;
-    dateOfBirth: string;
-}
-
-class ProfileRepository {
+class ProfileRepositoryImplementation implements ProfileRepository {
     private readonly tableName: string;
 
     constructor(tableName: string) {
@@ -32,4 +26,4 @@ class ProfileRepository {
     }
 }
 
-export default ProfileRepository;
+export default ProfileRepositoryImplementation;

@@ -36,49 +36,46 @@ Resources:
                   - dynamodb:GetItem
                   - dynamodb:UpdateItem
                   - dynamodb:DeleteItem
-                Resource: !GetAtt UsersTable.Arn
+                Resource: !GetAtt ProfilesTable.Arn
 
-  ### Users Table ###
-  UsersTable:
+  ### profiles table ###
+  ProfilesTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: Users
+      TableName: Profiles
       AttributeDefinitions:
-        - AttributeName: UserId
+        - AttributeName: ProfileId
           AttributeType: S
       KeySchema:
-        - AttributeName: UserId
+        - AttributeName: ProfileId
           KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
-      Tags:
-        - Key: Environment
-          Value: Production
 
-  ### User Interactions Table ###
-  UserInteractionsTable:
+  ### profile interactions table ###
+  ProfileInteractionsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: UserInteractions
+      TableName: ProfileInteractions
       AttributeDefinitions:
-        - AttributeName: UserId
+        - AttributeName: ProfileId
           AttributeType: S
-        - AttributeName: TargetUserId
+        - AttributeName: TargetProfileId
           AttributeType: S
         - AttributeName: Status
           AttributeType: S
       KeySchema:
-        - AttributeName: UserId
+        - AttributeName: ProfileId
           KeyType: HASH
-        - AttributeName: TargetUserId
+        - AttributeName: TargetProfileId
           KeyType: RANGE
       GlobalSecondaryIndexes:
-        - IndexName: TargetUserIndex
+        - IndexName: TargetProfileIndex
           KeySchema:
-            - AttributeName: TargetUserId
+            - AttributeName: TargetProfileId
               KeyType: HASH
             - AttributeName: Status
               KeyType: RANGE
@@ -91,27 +88,27 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
 
-  ### User Complaints Table ###
-  UserComplaintsTable:
+  ### profile complaints table ###
+  ProfileComplaintsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: UserGrievances
+      TableName: ProfileGrievances
       AttributeDefinitions:
-        - AttributeName: ComplainedUserId
+        - AttributeName: ComplainedProfileId
           AttributeType: S
         - AttributeName: ComplaintId
           AttributeType: S
         - AttributeName: Resolved
           AttributeType: N
       KeySchema:
-        - AttributeName: ComplainedUserId
+        - AttributeName: ComplainedProfileId
           KeyType: HASH
         - AttributeName: ComplaintId
           KeyType: RANGE
       GlobalSecondaryIndexes:
         - IndexName: ResolvedComplaintsIndex
           KeySchema:
-            - AttributeName: ComplainedUserId
+            - AttributeName: ComplainedProfileId
               KeyType: HASH
             - AttributeName: Resolved
               KeyType: RANGE
@@ -124,6 +121,27 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
 
+  ### table to store profile images ###
+  ProfileImagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ProfileImages
+      AttributeDefinitions:
+        - AttributeName: ProfileId
+          AttributeType: S
+        - AttributeName: PictureId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ProfileId
+          KeyType: HASH
+        - AttributeName: PictureId
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+
   ### profile api ###
   ProfileApi:
     Type: AWS::ApiGateway::RestApi
@@ -135,38 +153,60 @@ Resources:
         Types:
           - EDGE
 
-  ### profile api resource ###
-  ProfileResource:
+  # ====================> update profile api resource <==================== #
+  UpdateProfileResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt ProfileApi.RootResourceId
-      PathPart: profile
+      PathPart: update-profile
       RestApiId: !Ref ProfileApi
 
   ### profile api method ###
-  ProfileMethod:
+  UpdateProfileMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
       HttpMethod: POST
-      ResourceId: !Ref ProfileResource
+      ResourceId: !Ref UpdateProfileResource
       RestApiId: !Ref ProfileApi
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
         Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateProfileFunction.Arn}/invocations
 
+  # ====================> upload image api resource <==================== #
+  UploadImageResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ProfileApi.RootResourceId
+      PathPart: upload-image
+      RestApiId: !Ref ProfileApi
 
-  ### profile api deployment ###
+  ### upload profile image method ###
+  UploadImageMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref UploadImageResource
+      RestApiId: !Ref ProfileApi
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadProfileImageFunction.Arn}/invocations
+
+
+  # ====================> profile api deployment resource <==================== #
   ProfileDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
-        - ProfileMethod
+        - UpdateProfileMethod
+        - UploadImageMethod
     Properties:
       RestApiId: !Ref ProfileApi
       StageName: prod
 
-  ### create profile ###
+  # ====================> create profile lambda <==================== #
   CreateProfileFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -178,21 +218,34 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Environment:
         Variables:
-          DB_TABLE_USERS: !Ref UsersTable
+          DB_TABLE_PROFILES: !Ref ProfilesTable
 
+  # ====================> upload profile image lambda <==================== #
+  UploadProfileImageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: upload-profile-image.handler
+      Code:
+        S3Bucket: !ImportValue marhabaah-base-code
+        S3Key: !Sub ${AWS::StackName}/upload-profile-image.zip
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          DB_TABLE_PROFILES: !Ref ProfilesTable
 
 Outputs:
-  UsersTableName:
-    Description: Name of the Users table
-    Value: !Ref UsersTable
+  ProfilesTableName:
+    Description: Name of the profile table
+    Value: !Ref ProfilesTable
 
-  UserInteractionsTableName:
-    Description: Name of the User Interactions table
-    Value: !Ref UserInteractionsTable
+  ProfileInteractionsTableName:
+    Description: Name of the profile interactions table
+    Value: !Ref ProfileInteractionsTable
 
-  UserComplaintsTableName:
-    Description: Name of the User Complaints table
-    Value: !Ref UserComplaintsTable
+  ProfileComplaintsTableName:
+    Description: Name of the profile complaints table
+    Value: !Ref ProfileComplaintsTable
 
 
 

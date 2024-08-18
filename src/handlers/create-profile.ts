@@ -1,24 +1,29 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
-import ProfileService from "../bootstrap";
+import { Bootstrap } from '../bootstrap';
+import { UserProfile } from '../repository/interface/profile-interface';
+
+const { profileService } = Bootstrap.initializeProfileService();
 
 export const handler: APIGatewayProxyHandler = async (event) => {
     try {
-        const requestBody = JSON.parse(event.body || '{}');
+        const userProfile: UserProfile = JSON.parse(event.body || '{}');
 
-        const { username, email, name, dateOfBirth } = requestBody;
+        if (!userProfile.username || !userProfile.email || !userProfile.name || !userProfile.dateOfBirth) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: 'Missing required profile information' }),
+            };
+        }
 
-        const service = ProfileService.getInstance();
-
-        const result = await service.saveUserProfile({ username, email, name, dateOfBirth });
-
+        const savedProfile = await profileService.saveUserProfile(userProfile);
         return {
-            statusCode: 201,
-            body: JSON.stringify({ message: 'User created successfully', data: result }),
+            statusCode: 200,
+            body: JSON.stringify(savedProfile),
         };
     } catch (error) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Internal Server Error', error: 'error...' }),
+            body: JSON.stringify({ message: 'Internal server error' }),
         };
     }
 };
