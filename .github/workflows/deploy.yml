@@ -21,6 +21,11 @@ jobs:
         with:
           node-version: 20
 
+      - name: Update .npmrc
+        run: |
+          echo "@muhammad-mubeen-hamid:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.MARHABA_GITHUB_TOKEN }}" >> .npmrc
+
       - name: Install dependencies
         run: yarn install
 
