@@ -208,11 +208,11 @@ Resources:
       RestApiId: !Ref ProfileApi
       StageName: prod
 
-  # ====================> create profile lambda <==================== #
+  # ====================> update profile lambda <==================== #
   UpdateProfileFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Handler: create-profile.handler
+      Handler: udate-profile.handler
       Code:
         S3Bucket: !ImportValue marhabaah-base-code
         S3Key: !Sub ${AWS::StackName}/update-profile.zip
