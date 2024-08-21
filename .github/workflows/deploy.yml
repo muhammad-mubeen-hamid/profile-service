@@ -8,6 +8,7 @@ on:
 env:
   SERVICE_NAME: profile-service
 
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -21,15 +22,25 @@ jobs:
         with:
           node-version: 20
 
-      - name: Update .npmrc
-        run: |
-          
-
       - name: Install dependencies
         run: |
           echo "@muhammad-mubeen-hamid:registry=https://npm.pkg.github.com" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.MARHABA_GITHUB_TOKEN }}" >> .npmrc
           yarn install
+
+      - name: Create Lambda Layer Package
+        run: |
+          mkdir -p layer/nodejs
+          cp package.json yarn.lock layer/nodejs/
+          cd layer/nodejs
+          yarn install --production
+          cd ..
+          zip -r9 ../layer.zip .
+          cd ..
+
+      - name: Upload Lambda Layer to S3
+        run: |
+          aws s3 cp layer.zip s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/layers/${{ env.SERVICE_NAME }}/layer.zip
 
       - name: Compile and package Lambda functions
         run: bash ./.github/package-lambdas.sh
@@ -50,9 +61,11 @@ jobs:
       - name: Deploy CloudFormation stack
         run: |
           aws cloudformation deploy \
-            --template-file ./infrastructure.yml \
-            --stack-name profile-service \
-            --capabilities CAPABILITY_NAMED_IAM 
+          --template-file ./infrastructure.yml \
+          --stack-name profile-service \
+          --capabilities CAPABILITY_NAMED_IAM \
+          --parameter-overrides LambdaLayerS3Key=layers/${{ env.SERVICE_NAME }}/layer.zip
+
 
       - name: Create API Gateway Deployment
         run: |
