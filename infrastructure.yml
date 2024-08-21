@@ -228,6 +228,8 @@ Resources:
         S3Key: !Ref LambdaLayerS3Key
       CompatibleRuntimes:
         - nodejs20.x
+      CompatibleArchitectures:
+        - x86_64
 
   # ====================> update profile <==================== #
   UpdateProfileFunction:
