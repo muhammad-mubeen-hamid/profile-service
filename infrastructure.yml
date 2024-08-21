@@ -2,6 +2,10 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Infrastructure for the profile service'
 
 Parameters:
+  DeployTime:
+    Type: String
+    Description: Time of deployment
+
   LambdaLayerS3Key:
     Type: String
     Description: S3 key for the Lambda layer
@@ -238,7 +242,7 @@ Resources:
       Handler: handlers/update-profile.handler
       Code:
         S3Bucket: !ImportValue marhabaah-base-code
-        S3Key: !Sub ${AWS::StackName}/update-profile.zip
+        S3Key: !Sub ${AWS::StackName}/update-profile_${DeployTime}.zip
       Runtime: nodejs20.x
       Role: !GetAtt LambdaExecutionRole.Arn
       Timeout: 30
@@ -255,7 +259,7 @@ Resources:
       Handler: upload-profile-image.handler
       Code:
         S3Bucket: !ImportValue marhabaah-base-code
-        S3Key: !Sub ${AWS::StackName}/upload-profile-image.zip
+        S3Key: !Sub ${AWS::StackName}/upload-profile-image_${DeployTime}.zip
       Runtime: nodejs20.x
       Role: !GetAtt LambdaExecutionRole.Arn
       Layers:
