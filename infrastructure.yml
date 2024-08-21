@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Infrastructure for the profile service'
 
+Parameters:
+  LambdaLayerS3Key:
+    Type: String
+    Description: S3 key for the Lambda layer
+
 Resources:
 
   ### roles ###
@@ -208,7 +213,23 @@ Resources:
       RestApiId: !Ref ProfileApi
       StageName: prod
 
-  # ====================> update profile lambda <==================== #
+
+  # ==============================================================================
+  # ================================== Lambdas ===================================
+  # ==============================================================================
+
+  ProfileServiceLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: ProfileServiceLayer
+      Description: Node.js dependencies for Profile Service
+      Content:
+        S3Bucket: !ImportValue marhabaah-base-code
+        S3Key: !Ref LambdaLayerS3Key
+      CompatibleRuntimes:
+        - nodejs20.x
+
+  # ====================> update profile <==================== #
   UpdateProfileFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -218,6 +239,8 @@ Resources:
         S3Key: !Sub ${AWS::StackName}/update-profile.zip
       Runtime: nodejs20.x
       Role: !GetAtt LambdaExecutionRole.Arn
+      Layers:
+        - !Ref ProfileServiceLayer
       Environment:
         Variables:
           DB_TABLE_PROFILES: !Ref ProfilesTable
@@ -232,6 +255,8 @@ Resources:
         S3Key: !Sub ${AWS::StackName}/upload-profile-image.zip
       Runtime: nodejs20.x
       Role: !GetAtt LambdaExecutionRole.Arn
+      Layers:
+        - !Ref ProfileServiceLayer
       Environment:
         Variables:
           DB_TABLE_PROFILES: !Ref ProfilesTable
