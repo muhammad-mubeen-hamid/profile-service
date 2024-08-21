@@ -38,10 +38,8 @@ jobs:
       - name: Create Lambda Layer Package
         run: |
           mkdir -p layer/nodejs
-          cp package.json yarn.lock layer/nodejs/
-          cd layer/nodejs
-          yarn install --production
-          cd ..
+          cp -r node_modules/ layer/nodejs/
+          cd layer
           zip -r9 ../layer.zip .
           cd ..
 
