@@ -3,7 +3,7 @@ import { Bootstrap } from '../bootstrap';
 
 const { imageService } = Bootstrap.initializeImageService();
 
-export const handler: APIGatewayProxyHandler = async (event) => {
+const text: APIGatewayProxyHandler = async (event) => {
     try {
         const userId = event.pathParameters?.userId;
         const picture = Buffer.from(event.body || '', 'base64');
@@ -26,5 +26,16 @@ export const handler: APIGatewayProxyHandler = async (event) => {
             statusCode: 500,
             body: JSON.stringify({ message: 'Internal server error' }),
         };
+    }
+};
+
+export const handler: APIGatewayProxyHandler = async (event) => {
+    console.log('Hello');
+    const req = require('@muhummad-mubeen-hamid/marhaba-commons');
+    console.log(req);
+
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ message: 'Hello' }),
     }
 };
