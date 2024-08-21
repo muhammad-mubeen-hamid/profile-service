@@ -28,6 +28,13 @@ jobs:
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.MARHABA_GITHUB_TOKEN }}" >> .npmrc
           yarn install
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.MARHABA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.MARHABA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
       - name: Create Lambda Layer Package
         run: |
           mkdir -p layer/nodejs
@@ -38,19 +45,12 @@ jobs:
           zip -r9 ../layer.zip .
           cd ..
 
-      - name: Upload Lambda Layer to S3
-        run: |
-          aws s3 cp layer.zip s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/layers/${{ env.SERVICE_NAME }}/layer.zip
-
       - name: Compile and package Lambda functions
         run: bash ./.github/package-lambdas.sh
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.MARHABA_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.MARHABA_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+      - name: Upload Lambda Layer to S3
+        run: |
+          aws s3 cp layer.zip s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/layers/${{ env.SERVICE_NAME }}/layer.zip     
 
       - name: Upload Lambda packages to S3
         run: |
