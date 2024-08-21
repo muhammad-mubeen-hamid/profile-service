@@ -8,7 +8,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     try {
         const userProfile: UserProfile = JSON.parse(event.body || '{}');
 
-        if (!userProfile.username || !userProfile.email || !userProfile.name || !userProfile.dateOfBirth) {
+        if (!userProfile.email || !userProfile.phone) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({ message: 'Missing required profile information' }),
