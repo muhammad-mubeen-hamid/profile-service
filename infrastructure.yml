@@ -212,7 +212,7 @@ Resources:
   UpdateProfileFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Handler: update-profile.handler
+      Handler: handlers/update-profile.handler
       Code:
         S3Bucket: !ImportValue marhabaah-base-code
         S3Key: !Sub ${AWS::StackName}/update-profile.zip
