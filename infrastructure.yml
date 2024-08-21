@@ -239,6 +239,7 @@ Resources:
         S3Key: !Sub ${AWS::StackName}/update-profile.zip
       Runtime: nodejs20.x
       Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
       Layers:
         - !Ref ProfileServiceLayer
       Environment:
