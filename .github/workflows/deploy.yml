@@ -47,6 +47,12 @@ jobs:
             --stack-name profile-service \
             --capabilities CAPABILITY_NAMED_IAM 
 
+      - name: Create API Gateway Deployment
+        run: |
+          echo "Creating API Gateway deployment"
+          API_ID=$(aws cloudformation describe-stacks --stack-name profile-service --query "Stacks[0].Outputs[?OutputKey=='ProfileApiId'].OutputValue" --output text)
+          aws apigateway create-deployment --rest-api-id $API_ID --stage-name prod
+
       - name: Post-deployment verification
         run: |
           aws cloudformation describe-stacks --stack-name profile-service

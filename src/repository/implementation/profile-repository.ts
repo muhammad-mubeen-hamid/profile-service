@@ -1,5 +1,6 @@
 import { DynamoDB } from 'aws-sdk';
 import {ProfileRepository, UserProfile} from "../interface/profile-interface";
+import {AttributeValue, PutItemInput} from "aws-sdk/clients/dynamodb";
 
 const dynamoDb = new DynamoDB.DocumentClient();
 
@@ -11,18 +12,26 @@ class ProfileRepositoryImplementation implements ProfileRepository {
     }
 
     public async saveUserProfile(userProfile: UserProfile): Promise<UserProfile> {
-        const params = {
-            TableName: this.tableName,
-            Item: {
-                UserId: userProfile.username, // Assuming username is unique and used as the primary key
-                Email: userProfile.email,
-                Name: userProfile.name,
-                DateOfBirth: userProfile.dateOfBirth,
-            },
-        };
+        try {
+            const username: AttributeValue = {
+                S: userProfile.email
+            }
+            const phone: AttributeValue = {
+                S: userProfile.phone
+            }
+            const params: PutItemInput = {
+                TableName: this.tableName,
+                Item: {
+                    username: username,
+                    phone: phone,
+                },
+            };
 
-        await dynamoDb.put(params).promise();
-        return userProfile;
+            await dynamoDb.put(params).promise();
+            return userProfile;
+        } catch (error) {
+            throw new Error('ProfileRepositoryImplementation :: Error saving user profile');
+        }
     }
 }
 
