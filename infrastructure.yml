@@ -247,5 +247,9 @@ Outputs:
     Description: Name of the profile complaints table
     Value: !Ref ProfileComplaintsTable
 
+  ProfileApiId:
+    Description: ID of the profile API
+    Value: !Ref ProfileApi
+
 
 
