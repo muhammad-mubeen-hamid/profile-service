@@ -71,7 +71,7 @@ jobs:
           --stack-name profile-service \
           --capabilities CAPABILITY_NAMED_IAM \
           --parameter-overrides \ 
-            LambdaLayerS3Key=layers/${{ env.SERVICE_NAME }}/layer.zip
+            LambdaLayerS3Key=layers/${{ env.SERVICE_NAME }}/layer.zip \
             DeployTime=${{ env.current_time }}
 
 
