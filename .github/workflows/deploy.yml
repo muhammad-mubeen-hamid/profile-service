@@ -23,11 +23,13 @@ jobs:
 
       - name: Update .npmrc
         run: |
-          echo "@muhammad-mubeen-hamid:registry=https://npm.pkg.github.com" >> .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.MARHABA_GITHUB_TOKEN }}" >> .npmrc
+          
 
       - name: Install dependencies
-        run: yarn install
+        run: |
+          echo "@muhammad-mubeen-hamid:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.MARHABA_GITHUB_TOKEN }}" >> .npmrc
+          yarn install
 
       - name: Compile and package Lambda functions
         run: bash ./.github/package-lambdas.sh
