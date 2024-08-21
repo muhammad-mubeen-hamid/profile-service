@@ -142,7 +142,9 @@ Resources:
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
 
-  ### profile api ###
+  # ==============================================================================
+  # ================================ API Gateway =================================
+  # ==============================================================================
   ProfileApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -172,7 +174,7 @@ Resources:
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
-        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateProfileFunction.Arn}/invocations
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateProfileFunction.Arn}/invocations
 
   # ====================> upload image api resource <==================== #
   UploadImageResource:
@@ -207,13 +209,13 @@ Resources:
       StageName: prod
 
   # ====================> create profile lambda <==================== #
-  CreateProfileFunction:
+  UpdateProfileFunction:
     Type: AWS::Lambda::Function
     Properties:
       Handler: create-profile.handler
       Code:
         S3Bucket: !ImportValue marhabaah-base-code
-        S3Key: !Sub ${AWS::StackName}/create-profile.zip
+        S3Key: !Sub ${AWS::StackName}/update-profile.zip
       Runtime: nodejs20.x
       Role: !GetAtt LambdaExecutionRole.Arn
       Environment:
@@ -233,6 +235,18 @@ Resources:
       Environment:
         Variables:
           DB_TABLE_PROFILES: !Ref ProfilesTable
+          
+  # ==============================================================================
+  # ========================== LAMBDA & API PERMISSIONS ==========================
+  # ==============================================================================
+  UpdateProfileApiGatewayInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt UpdateProfileFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProfileApi}/*/POST/update-profile
+
 
 Outputs:
   ProfilesTableName:
