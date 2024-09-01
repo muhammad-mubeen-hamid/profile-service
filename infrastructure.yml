@@ -243,6 +243,7 @@ Resources:
         S3Key: !Sub ${AWS::StackName}/update-profile_${DeployTime}.zip
       Runtime: nodejs20.x
       Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
       Layers:
         - !Ref ProfileServiceLayer
       Environment:
@@ -259,6 +260,7 @@ Resources:
         S3Key: !Sub ${AWS::StackName}/upload-profile-image_${DeployTime}.zip
       Runtime: nodejs20.x
       Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
       Layers:
         - !Ref ProfileServiceLayer
       Environment:
