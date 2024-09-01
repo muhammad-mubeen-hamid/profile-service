@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@aws-sdk/types": "^3.609.0",
-    "@muhammad-mubeen-hamid/marhaba-commons": "^1.0.6",
+    "@muhammad-mubeen-hamid/marhaba-commons": "^1.0.6-a",
     "@types/aws-lambda": "^8.10.130",
     "@types/cfn-response": "^1.0.8",
     "aws-sdk": "^2.1667.0"
