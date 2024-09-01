@@ -256,7 +256,7 @@ Resources:
   UploadProfileImageFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Handler: upload-profile-image.handler
+      Handler: handlers/upload-profile-image.handler
       Code:
         S3Bucket: !ImportValue marhabaah-base-code
         S3Key: !Sub ${AWS::StackName}/upload-profile-image_${DeployTime}.zip
