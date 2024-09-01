@@ -232,8 +232,6 @@ Resources:
         S3Key: !Ref LambdaLayerS3Key
       CompatibleRuntimes:
         - nodejs20.x
-      CompatibleArchitectures:
-        - x86_64
 
   # ====================> update profile <==================== #
   UpdateProfileFunction:
@@ -245,7 +243,6 @@ Resources:
         S3Key: !Sub ${AWS::StackName}/update-profile_${DeployTime}.zip
       Runtime: nodejs20.x
       Role: !GetAtt LambdaExecutionRole.Arn
-      Timeout: 30
       Layers:
         - !Ref ProfileServiceLayer
       Environment:

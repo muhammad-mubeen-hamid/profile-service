@@ -10,10 +10,10 @@
     "@smithy/types" "^3.3.0"
     tslib "^2.6.2"
 
-"@muhammad-mubeen-hamid/marhaba-commons@^1.0.5":
-  version "1.0.5"
-  resolved "https://npm.pkg.github.com/download/@muhammad-mubeen-hamid/marhaba-commons/1.0.5/9044fbe351415c69ff64a8f9dda3048a62a75013#9044fbe351415c69ff64a8f9dda3048a62a75013"
-  integrity sha512-7sATbpdC4VC/20TyrPpIK9jJic0u1URT2Z2ldf3AcJTC636G5LyNM278Cq8o0qARwvg753OjTggIG7l+JBHfVg==
+"@muhammad-mubeen-hamid/marhaba-commons@^1.0.6":
+  version "1.0.6"
+  resolved "https://npm.pkg.github.com/download/@muhammad-mubeen-hamid/marhaba-commons/1.0.6/e48ca74c18eebfd20af37ac8ef7a51e4ac33b682#e48ca74c18eebfd20af37ac8ef7a51e4ac33b682"
+  integrity sha512-FvLuKC6S8zbcGBQyJCuUEkuLBPCBuaBN0Y+cO5m8baBHu1hCLJDVQ/h4h2oYRdID5mvDoCudA1mP9eYjAyUrcA==
 
 "@smithy/types@^3.3.0":
   version "3.3.0"
