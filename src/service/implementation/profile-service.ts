@@ -1,6 +1,6 @@
 import { ProfileService } from "../interface/profile-interface";
 import { ProfileRepository, UserProfile } from "../../repository/interface/profile-interface";
-import {AppResponse, SendResponse, AppResponseSuccessBody, ProfileCodes} from "@muhammad-mubeen-hamid/marhaba-commons/src";
+import {AppResponse, SendResponse, AppResponseSuccessBody, ProfileCodes} from "@muhammad-mubeen-hamid/marhaba-commons";
 
 export class ProfileServiceImplementation implements ProfileService {
     private profileRepository: ProfileRepository;

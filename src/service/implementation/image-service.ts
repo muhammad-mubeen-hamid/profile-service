@@ -5,7 +5,7 @@ import {
     AppResponseSuccessBody,
     ProfileCodes,
     SendResponse
-} from "@muhammad-mubeen-hamid/marhaba-commons/src";
+} from "@muhammad-mubeen-hamid/marhaba-commons";
 
 export class ImageServiceImplementation implements ImageService {
 
