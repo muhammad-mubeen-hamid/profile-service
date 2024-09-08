@@ -1,8 +1,8 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
-import { Bootstrap } from '../bootstrap';
 import { UserProfile } from '../repository/interface/profile-interface';
+import {ProfileBootstrap} from "../bootstrap/profile-bootstrap";
 
-const { profileService } = Bootstrap.initializeProfileService();
+const { profileService } = ProfileBootstrap.initializeProfileService();
 
 export const handler: APIGatewayProxyHandler = async (event) => {
     try {

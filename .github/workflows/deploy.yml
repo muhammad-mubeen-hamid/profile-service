@@ -8,7 +8,6 @@ on:
 env:
   SERVICE_NAME: profile-service
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -39,6 +38,10 @@ jobs:
         id: current_time
         run: echo "current_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
 
+      - name: Bundle and Compile Lambda Functions with esbuild
+        run: |
+          node esbuild.js
+
       - name: Create Lambda Layer Package
         run: |
           mkdir -p layer/nodejs
@@ -47,20 +50,18 @@ jobs:
           zip -r9 ../layer.zip .
           cd ..
 
-      - name: Compile and package Lambda functions
-        run: bash ./.github/package-lambdas.sh
-
       - name: Upload Lambda Layer to S3
         run: |
-          aws s3 cp layer.zip s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/layers/${{ env.SERVICE_NAME }}/layer.zip     
+          aws s3 cp layer.zip s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/layers/${{ env.SERVICE_NAME }}/layer.zip
 
       - name: Upload Lambda packages to S3
         run: |
-          for file in dist/*.zip; do
-            base_name=$(basename "$file" .zip)
+          for file in dist/*.js; do
+            base_name=$(basename "$file" .js)
             suffix="${{ env.current_time }}"
             new_name="${base_name}_${suffix}.zip"
-            aws s3 cp "$file" "s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/${{ env.SERVICE_NAME }}/$new_name"
+            zip -r $new_name $file
+            aws s3 cp "$new_name" "s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/${{ env.SERVICE_NAME }}/$new_name"
             echo "S3_KEY_${base_name^^}=$new_name" >> $GITHUB_ENV
           done
 
@@ -71,7 +72,6 @@ jobs:
           --stack-name profile-service \
           --capabilities CAPABILITY_NAMED_IAM \
           --parameter-overrides LambdaLayerS3Key=layers/${{ env.SERVICE_NAME }}/layer.zip DeployTime=${{ env.current_time }}
-
 
       - name: Create API Gateway Deployment
         run: |

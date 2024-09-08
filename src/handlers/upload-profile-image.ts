@@ -1,9 +1,9 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
-import { Bootstrap } from '../bootstrap';
+import {ImageBootstrap} from "../bootstrap/image-bootstrap";
 
-const { imageService } = Bootstrap.initializeImageService();
+const { imageService } = ImageBootstrap.initializeImageService();
 
-const text: APIGatewayProxyHandler = async (event) => {
+const handler: APIGatewayProxyHandler = async (event) => {
     try {
         const userId = event.pathParameters?.userId;
         const picture = Buffer.from(event.body || '', 'base64');
@@ -26,16 +26,5 @@ const text: APIGatewayProxyHandler = async (event) => {
             statusCode: 500,
             body: JSON.stringify({ message: 'Internal server error' }),
         };
-    }
-};
-
-export const handler: APIGatewayProxyHandler = async (event) => {
-    console.log('Hello');
-    const req = require('@muhummad-mubeen-hamid/marhaba-commons');
-    console.log(req);
-
-    return {
-        statusCode: 200,
-        body: JSON.stringify({ message: 'Hello' }),
     }
 };
