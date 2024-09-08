@@ -14,7 +14,7 @@ const handlerFiles = fs.readdirSync(handlersDir).filter(file => file.endsWith('.
 
 handlerFiles.forEach(file => {
     const entryPoint = path.join(handlersDir, file);
-    const outFile = path.join(distDir, file.replace('.ts', '.js'));
+    const outFile = path.join(__dirname, file.replace('.ts', '.js'));
 
     esbuild.buildSync({
         entryPoints: [entryPoint],
