@@ -1,4 +1,5 @@
 const esbuild = require('esbuild');
+const externals = require('esbuild-node-externals');
 const path = require('path');
 const fs = require('fs');
 
@@ -12,18 +13,22 @@ if (!fs.existsSync(distDir)) {
 // Get all handler files
 const handlerFiles = fs.readdirSync(handlersDir).filter(file => file.endsWith('.ts'));
 
-handlerFiles.forEach(file => {
+const buildFunctions = handlerFiles.map(async (file) => {
     const entryPoint = path.join(handlersDir, file);
     const outFile = path.join(distDir, file.replace('.ts', '.js'));
 
-    esbuild.buildSync({
+    await esbuild.build({
         entryPoints: [entryPoint],
         bundle: true,
         platform: 'node',
         target: 'node20',
         outfile: outFile,
-        external: ['aws-sdk', '@muhammad-mubeen-hamid/marhaba-commons'],
+        plugins: [externals.nodeExternalsPlugin()],
     });
 
     console.log(`Built ${file} to ${outFile}`);
 });
+
+Promise.all(buildFunctions)
+    .then(() => console.log('Build completed!'))
+    .catch(err => console.error('Build failed:', err));
