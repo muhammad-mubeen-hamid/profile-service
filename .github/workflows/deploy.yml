@@ -40,7 +40,7 @@ jobs:
 
       - name: Bundle and Compile Lambda Functions with esbuild
         run: |
-          node esbuild.js
+          yarn build
 
       - name: Create Lambda Layer Package
         run: |
