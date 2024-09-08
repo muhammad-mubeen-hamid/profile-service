@@ -59,10 +59,15 @@ jobs:
           for file in dist/*.js; do
             base_name=$(basename "$file" .js)
             suffix="${{ env.current_time }}"
-            new_name="${base_name}_${suffix}.zip"
-            zip -r $new_name $file
-            aws s3 cp "$new_name" "s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/${{ env.SERVICE_NAME }}/$new_name"
-            echo "S3_KEY_${base_name^^}=$new_name" >> $GITHUB_ENV
+            zip_name="${base_name}_${suffix}.zip"
+      
+            # Create a zip with the file directly, without keeping the dist directory structure
+            zip -j "$zip_name" "$file"
+      
+            # Upload the zip to S3
+            aws s3 cp "$zip_name" "s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/${{ env.SERVICE_NAME }}/$zip_name"
+      
+            echo "S3_KEY_${base_name^^}=$zip_name" >> $GITHUB_ENV
           done
 
       - name: Deploy CloudFormation stack
