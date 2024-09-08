@@ -248,7 +248,7 @@ Resources:
         - !Ref ProfileServiceLayer
       Environment:
         Variables:
-          DB_TABLE_PROFILES: !Ref ProfilesTable
+          USER_PROFILE_TABLE: !Ref ProfilesTable
 
   # ====================> upload profile image lambda <==================== #
   UploadProfileImageFunction:
@@ -265,7 +265,7 @@ Resources:
         - !Ref ProfileServiceLayer
       Environment:
         Variables:
-          DB_TABLE_PROFILES: !Ref ProfilesTable
+          USER_PROFILE_TABLE: !Ref ProfilesTable
           
   # ==============================================================================
   # ========================== LAMBDA & API PERMISSIONS ==========================
