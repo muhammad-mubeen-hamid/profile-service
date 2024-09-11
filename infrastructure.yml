@@ -170,9 +170,8 @@ Resources:
       Name: CustomAuthorizer
       Type: TOKEN
       RestApiId: !Ref ProfileApi
-      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${!ImportValue ${cognito-service}-CustomAuthorizer}/invocations
+      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${!ImportValue${cognito-service}-CustomAuthorizer}/invocations
       IdentitySource: method.request.header.Authorization
-      AuthorizerResultTtlInSeconds: 300
       AuthorizerCredentials: !GetAtt LambdaExecutionRole.Arn
 
   # ====================> update profile api resource <==================== #
