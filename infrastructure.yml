@@ -170,7 +170,9 @@ Resources:
       Name: CustomAuthorizer
       Type: TOKEN
       RestApiId: !Ref ProfileApi
-      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${!ImportValue${cognito-service}-CustomAuthorizer}/invocations
+      AuthorizerUri: !Sub
+        - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizerFunctionArn}/invocations"
+        - AuthorizerFunctionArn: !ImportValue cognito-service-CustomAuthorizer
       IdentitySource: method.request.header.Authorization
       AuthorizerCredentials: !GetAtt LambdaExecutionRole.Arn
 
