@@ -62,16 +62,13 @@ jobs:
           zip -r9 ../layer.zip .
           cd ..
 
+      - name: Clear S3 Bucket
+        run: |
+          aws s3 rm "s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}" --recursive
+
       - name: Upload Lambda Layer to S3
         run: |
           aws s3 cp layer.zip s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/layers/${{ env.SERVICE_NAME }}/layer.zip
-
-      - name: Clear S3 Bucket
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.MEETMUSLIMS_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.MEETMUSLIMS_AWS_SECRET_ACCESS_KEY }}
-        run: |
-          aws s3 rm "s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}" --recursive
 
       - name: Upload Lambda packages to S3
         run: |
