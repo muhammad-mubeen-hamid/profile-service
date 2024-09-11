@@ -1,4 +1,3 @@
-// userPicturesRepository.ts
 import { S3 } from 'aws-sdk';
 import {ImageRepository} from "../interface/image-repository";
 

@@ -13,13 +13,17 @@
     "@types/node": "^20.14.8",
     "esbuild": "^0.23.1",
     "typescript": "^5.1.5",
-    "esbuild-node-externals": "^1.14.0"
+    "esbuild-node-externals": "^1.14.0",
+    "@aws-sdk/types": "^3.609.0",
+    "@types/aws-lambda": "^8.10.145",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/jwk-to-pem": "^2.0.3",
+    "jwk-to-pem": "^2.0.6",
+    "@types/cfn-response": "^1.0.8"
   },
   "dependencies": {
-    "@aws-sdk/types": "^3.609.0",
     "@muhammad-mubeen-hamid/marhaba-commons": "^1.0.6-a",
-    "@types/aws-lambda": "^8.10.130",
-    "@types/cfn-response": "^1.0.8",
-    "aws-sdk": "^2.1667.0"
+    "aws-sdk": "^2.1667.0",
+    "jsonwebtoken": "^9.0.2"
   }
 }

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - develop
 
 env:
   SERVICE_NAME: profile-service
@@ -27,6 +28,10 @@ jobs:
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.MARHABA_GITHUB_TOKEN }}" >> .npmrc
           yarn install
 
+      - name: Bundle and Compile Lambda Functions
+        run: |
+          yarn build
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -34,13 +39,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.MARHABA_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Set environment
+        id: set-env
+        run: echo "environment=${{ github.ref == 'refs/heads/master' && 'prod' || 'develop' }}" >> $GITHUB_ENV
+
       - name: Get current time
         id: current_time
         run: echo "current_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
 
-      - name: Bundle and Compile Lambda Functions with esbuild
+      - name: Read parameter file
+        id: read_params
         run: |
-          yarn build
+          param_file="./${{ env.environment }}-params.json"
+          params=$(jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]' $param_file | paste -sd " " -)
+          echo "params=$params" >> $GITHUB_ENV
 
       - name: Create Lambda Layer Package
         run: |
@@ -53,6 +65,13 @@ jobs:
       - name: Upload Lambda Layer to S3
         run: |
           aws s3 cp layer.zip s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/layers/${{ env.SERVICE_NAME }}/layer.zip
+
+      - name: Clear S3 Bucket
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.MEETMUSLIMS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.MEETMUSLIMS_AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws s3 rm "s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}" --recursive
 
       - name: Upload Lambda packages to S3
         run: |
@@ -74,16 +93,19 @@ jobs:
         run: |
           aws cloudformation deploy \
           --template-file ./infrastructure.yml \
-          --stack-name profile-service \
+          --stack-name ${{ env.SERVICE_NAME }} \
           --capabilities CAPABILITY_NAMED_IAM \
           --parameter-overrides LambdaLayerS3Key=layers/${{ env.SERVICE_NAME }}/layer.zip DeployTime=${{ env.current_time }}
 
       - name: Create API Gateway Deployment
         run: |
           echo "Creating API Gateway deployment"
-          API_ID=$(aws cloudformation describe-stacks --stack-name profile-service --query "Stacks[0].Outputs[?OutputKey=='ProfileApiId'].OutputValue" --output text)
+          API_ID=$(aws cloudformation describe-stacks --stack-name ${{ env.SERVICE_NAME }} --query "Stacks[0].Outputs[?OutputKey=='ProfileApiId'].OutputValue" --output text)
           aws apigateway create-deployment --rest-api-id $API_ID --stage-name prod
 
       - name: Post-deployment verification
         run: |
-          aws cloudformation describe-stacks --stack-name profile-service
+          aws cloudformation describe-stacks --stack-name ${{ env.SERVICE_NAME }}
+
+      - name: Print GITHUB_ENV contents
+        run: cat $GITHUB_ENV

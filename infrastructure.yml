@@ -163,6 +163,15 @@ Resources:
       EndpointConfiguration:
         Types:
           - EDGE
+  # ====================> api authorizer <==================== #
+  ImportedAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: ImportedAuthorizer
+      Type: TOKEN
+      RestApiId: !Ref ProfileApi
+      IdentitySource: method.request.header.Authorization
+      AuthorizerUri: !ImportValue AuthorizerArn
 
   # ====================> update profile api resource <==================== #
   UpdateProfileResource:
@@ -180,6 +189,7 @@ Resources:
       HttpMethod: POST
       ResourceId: !Ref UpdateProfileResource
       RestApiId: !Ref ProfileApi
+      AuthorizerId: !Ref ImportedAuthorizer
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
