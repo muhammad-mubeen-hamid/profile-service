@@ -188,7 +188,7 @@ Resources:
   UpdateProfileMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      AuthorizationType: NONE
+      AuthorizationType: CUSTOM
       HttpMethod: POST
       ResourceId: !Ref UpdateProfileResource
       RestApiId: !Ref ProfileApi
