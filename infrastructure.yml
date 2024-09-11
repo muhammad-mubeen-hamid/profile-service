@@ -164,14 +164,16 @@ Resources:
         Types:
           - EDGE
   # ====================> api authorizer <==================== #
-  ImportedAuthorizer:
+  Authorizer:
     Type: AWS::ApiGateway::Authorizer
     Properties:
-      Name: ImportedAuthorizer
+      Name: CustomAuthorizer
       Type: TOKEN
       RestApiId: !Ref ProfileApi
+      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${!ImportValue ${cognito-service}-CustomAuthorizer}/invocations
       IdentitySource: method.request.header.Authorization
-      AuthorizerUri: !ImportValue AuthorizerArn
+      AuthorizerResultTtlInSeconds: 300
+      AuthorizerCredentials: !GetAtt LambdaExecutionRole.Arn
 
   # ====================> update profile api resource <==================== #
   UpdateProfileResource:
@@ -189,7 +191,7 @@ Resources:
       HttpMethod: POST
       ResourceId: !Ref UpdateProfileResource
       RestApiId: !Ref ProfileApi
-      AuthorizerId: !Ref ImportedAuthorizer
+      AuthorizerId: !Ref Authorizer
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
