@@ -1,0 +1,8 @@
+{
+  "NodeVersion": "nodejs20.x",
+  "Stage": "testing",
+  "Region": "us-east-1",
+  "ServiceName": "profile-service",
+  "DomainName": "marhabaah.com",
+  "CodeBucket": "marhaba-code"
+}

@@ -3,11 +3,7 @@ name: Deploy Profile Service
 on:
   push:
     branches:
-      - master
-      - develop
-
-env:
-  SERVICE_NAME: profile-service
+      - test
 
 jobs:
   deploy:
@@ -17,7 +13,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Read parameter file and export environment variables
+        id: read_params
+        run: |
+          param_file="./test.config.json"
+          jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]' $param_file | while IFS= read -r line; do
+            echo "$line" >> $GITHUB_ENV
+          done
+
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
@@ -30,6 +34,7 @@ jobs:
 
       - name: Bundle and Compile Lambda Functions
         run: |
+          yarn install --frozen-lockfile
           yarn build
 
       - name: Configure AWS credentials
@@ -37,72 +42,64 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.MARHABA_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.MARHABA_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ env.Region }}
 
-      - name: Set environment
-        id: set-env
-        run: echo "environment=${{ github.ref == 'refs/heads/master' && 'prod' || 'develop' }}" >> $GITHUB_ENV
+      - name: Clear S3 Code and Layer
+        run: |
+          aws s3 rm "s3://${{ env.CodeBucket }}" --recursive
+          aws s3 rm "s3://${{ env.CodeBucket }}/layers" --recursive
 
       - name: Get current time
         id: current_time
-        run: echo "current_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
+        run: echo "CurrentTime=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
 
-      - name: Read parameter file
-        id: read_params
-        run: |
-          param_file="./${{ env.environment }}-params.json"
-          params=$(jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]' $param_file | paste -sd " " -)
-          echo "params=$params" >> $GITHUB_ENV
+      - name: Install TypeScript
+        run: yarn global add typescript
 
-      - name: Create Lambda Layer Package
+      - name: Print GITHUB_ENV contents
+        run: cat $GITHUB_ENV
+
+      - name: Upload Lambda Layer
         run: |
+          rm -rf node_modules yarn.lock
+          yarn cache clean
+          yarn install --production
           mkdir -p layer/nodejs
           cp -r node_modules/ layer/nodejs/
           cd layer
           zip -r9 ../layer.zip .
+          du -sh nodejs
           cd ..
-
-      - name: Clear S3 Bucket
-        run: |
-          aws s3 rm "s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}" --recursive
 
       - name: Upload Lambda Layer to S3
         run: |
-          aws s3 cp layer.zip s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/layers/${{ env.SERVICE_NAME }}/layer.zip
+          aws s3 cp layer.zip s3://${{ env.CodeBucket }}/layers/${{ env.ServiceName }}/layer.zip
 
-      - name: Upload Lambda packages to S3
+      - name: Upload Lambda Functions
         run: |
-          for file in dist/*.js; do
+          cd ./dist
+          echo "Current time is ${{ env.CurrentTime }}"
+          for file in *.js; do
             base_name=$(basename "$file" .js)
-            suffix="${{ env.current_time }}"
-            zip_name="${base_name}_${suffix}.zip"
-      
-            # Create a zip with the file directly, without keeping the dist directory structure
-            zip -j "$zip_name" "$file"
-      
-            # Upload the zip to S3
-            aws s3 cp "$zip_name" "s3://${{ secrets.LAMBDA_CODE_BUCKET_NAME }}/${{ env.SERVICE_NAME }}/$zip_name"
-      
-            echo "S3_KEY_${base_name^^}=$zip_name" >> $GITHUB_ENV
+            zip_name="${base_name}_${{ env.CurrentTime }}.js.zip"
+            zip "$zip_name" "$file"
+            aws s3 cp "$zip_name" "s3://${{ env.CodeBucket }}/${{ env.ServiceName }}/${zip_name}"
           done
 
-      - name: Deploy CloudFormation stack
+      - name: Deploy using CloudFormation
         run: |
+          echo "Deploying to ${{ env.Stage }} at ${{ env.CurrentTime }}"
           aws cloudformation deploy \
-          --template-file ./infrastructure.yml \
-          --stack-name ${{ env.SERVICE_NAME }} \
-          --capabilities CAPABILITY_NAMED_IAM \
-          --parameter-overrides LambdaLayerS3Key=layers/${{ env.SERVICE_NAME }}/layer.zip DeployTime=${{ env.current_time }}
+            --template-file ./infrastructure.yml \
+            --stack-name ${{ env.ServiceName }} \
+            --capabilities CAPABILITY_IAM \
+            --parameter-overrides $(jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]' ./test.config.json) DeployTime=${{ env.CurrentTime }}
 
       - name: Create API Gateway Deployment
         run: |
           echo "Creating API Gateway deployment"
-          API_ID=$(aws cloudformation describe-stacks --stack-name ${{ env.SERVICE_NAME }} --query "Stacks[0].Outputs[?OutputKey=='ProfileApiId'].OutputValue" --output text)
-          aws apigateway create-deployment --rest-api-id $API_ID --stage-name prod
-
-      - name: Post-deployment verification
-        run: |
-          aws cloudformation describe-stacks --stack-name ${{ env.SERVICE_NAME }}
+          API_ID=$(aws cloudformation describe-stacks --stack-name ${{ env.ServiceName }} --query "Stacks[0].Outputs[?OutputKey=='ApiId'].OutputValue" --output text)
+          aws apigateway create-deployment --rest-api-id $API_ID --stage-name ${{ env.Stage }}
 
       - name: Print GITHUB_ENV contents
         run: cat $GITHUB_ENV

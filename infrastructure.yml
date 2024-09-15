@@ -1,33 +1,207 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Infrastructure for the profile service'
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation Template for Profile Service
 
 Parameters:
   DeployTime:
     Type: String
-    Description: Time of deployment
+    Description: The time at which the deployment is happening
 
-  LambdaLayerS3Key:
+  Stage:
     Type: String
-    Description: S3 key for the Lambda layer
+    Description: The stage of the deployment
+
+  NodeVersion:
+    Type: String
+    Description: Node version
+
+  CodeBucket:
+    Type: String
+    Description: S3 bucket for the Lambda code
 
 Resources:
+  # =================================================================
+  # ============================ TABLES =============================
+  # =================================================================
 
-  ### roles ###
+  ProfileTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub Profile
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  # =================================================================
+  # ========================== API GATEWAY ==========================
+  # =================================================================
+  Api:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub ${AWS::StackName}-api
+      Description: !Sub API for ${AWS::StackName}
+
+  # ==========================> Get Profile (GET) <===========================
+  GetUserResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt Api.RootResourceId
+      PathPart: profile
+      RestApiId: !Ref Api
+
+  GetUserMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref GetUserResource
+      RestApiId: !Ref Api
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetProfile.Arn}/invocations
+
+  # ========================> Update Profile (POST) <==========================
+  UpdateProfileResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt Api.RootResourceId
+      PathPart: profile
+      RestApiId: !Ref Api
+
+  UpdateProfileMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: POST
+      ResourceId: !Ref UpdateProfileResource
+      RestApiId: !Ref Api
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateProfile.Arn}/invocations
+
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - GetUserMethod
+    Properties:
+      RestApiId: !Ref Api
+
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref Api
+      DeploymentId: !Ref ApiDeployment
+      StageName: !Ref Stage
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          LoggingLevel: 'INFO'
+          DataTraceEnabled: false
+
+  # ======================================================================
+  # ========================== LAMBDA FUNCTIONS ==========================
+  # ======================================================================
+  AuthorizerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: authorizer.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: !Ref NodeVersion
+      Code:
+        S3Bucket: !Ref CodeBucket
+        S3Key: !Sub ${AWS::StackName}/authorizer_${DeployTime}.js.zip
+
+  ServiceLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: ProfileServiceLayer
+      Description: Node.js dependencies for Profile Service
+      Content:
+        S3Bucket: !Ref CodeBucket
+        S3Key: !Sub layers/${AWS::StackName}/layer.zip
+      CompatibleRuntimes: !Ref NodeVersion
+
+  # ==========================> Get Profile <===========================
+  GetProfile:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: get-profile.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: !Ref NodeVersion
+      Code:
+        S3Bucket: !Ref CodeBucket
+        S3Key: !Sub ${AWS::StackName}/get-user_${DeployTime}.js.zip
+
+  # =========================> Update Profile <=========================
+  UpdateProfile:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: update-profile.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: !Ref NodeVersion
+      Code:
+        S3Bucket: !Ref CodeBucket
+        S3Key: !Sub ${AWS::StackName}/update-profile_${DeployTime}.js.zip
+
+  # ==============================================================================
+  # ========================== LAMBDA & API PERMISSIONS ==========================
+  # ==============================================================================
+
+  GetUser_ApiGateway_InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt GetProfile.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/POST/profile
+
+  UpdateProfile_ApiGateway_InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt UpdateProfile.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/POST/profile
+
+  # ===========================================================
+  # ========================== ROLES ==========================
+  # ===========================================================
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: CreateProfileLambdaExecutionRole
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: LambdaBasicExecution
+        - PolicyName: LambdaAccessToCognito
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cognito-idp:SignUp
+                  - cognito-idp:AdminCreateUser
+                  - cognito-idp:DescribeUserPool
+                  - cognito-idp:AdminGetUser
+                  - cognito-idp:AdminInitiateAuth
+                  - cognito-idp:RespondToAuthChallenge
+                  - cognito-idp:AdminUpdateUserAttributes
+                Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}
+        - PolicyName: LambdaCloudWatchLogging
+          PolicyDocument:
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -35,279 +209,24 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-        - PolicyName: DynamoDBAccess
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - dynamodb:PutItem
-                  - dynamodb:GetItem
-                  - dynamodb:UpdateItem
-                  - dynamodb:DeleteItem
-                Resource: !GetAtt ProfilesTable.Arn
 
-  ### profiles table ###
-  ProfilesTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: Profiles
-      AttributeDefinitions:
-        - AttributeName: ProfileId
-          AttributeType: S
-      KeySchema:
-        - AttributeName: ProfileId
-          KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      StreamSpecification:
-        StreamViewType: NEW_AND_OLD_IMAGES
-
-  ### profile interactions table ###
-  ProfileInteractionsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: ProfileInteractions
-      AttributeDefinitions:
-        - AttributeName: ProfileId
-          AttributeType: S
-        - AttributeName: TargetProfileId
-          AttributeType: S
-        - AttributeName: Status
-          AttributeType: S
-      KeySchema:
-        - AttributeName: ProfileId
-          KeyType: HASH
-        - AttributeName: TargetProfileId
-          KeyType: RANGE
-      GlobalSecondaryIndexes:
-        - IndexName: TargetProfileIndex
-          KeySchema:
-            - AttributeName: TargetProfileId
-              KeyType: HASH
-            - AttributeName: Status
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-
-  ### profile complaints table ###
-  ProfileComplaintsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: ProfileGrievances
-      AttributeDefinitions:
-        - AttributeName: ComplainedProfileId
-          AttributeType: S
-        - AttributeName: ComplaintId
-          AttributeType: S
-        - AttributeName: Resolved
-          AttributeType: N
-      KeySchema:
-        - AttributeName: ComplainedProfileId
-          KeyType: HASH
-        - AttributeName: ComplaintId
-          KeyType: RANGE
-      GlobalSecondaryIndexes:
-        - IndexName: ResolvedComplaintsIndex
-          KeySchema:
-            - AttributeName: ComplainedProfileId
-              KeyType: HASH
-            - AttributeName: Resolved
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-
-  ### table to store profile images ###
-  ProfileImagesTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: ProfileImages
-      AttributeDefinitions:
-        - AttributeName: ProfileId
-          AttributeType: S
-        - AttributeName: PictureId
-          AttributeType: S
-      KeySchema:
-        - AttributeName: ProfileId
-          KeyType: HASH
-        - AttributeName: PictureId
-          KeyType: RANGE
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      StreamSpecification:
-        StreamViewType: NEW_AND_OLD_IMAGES
-
-  # ==============================================================================
-  # ================================ API Gateway =================================
-  # ==============================================================================
-  ProfileApi:
-    Type: AWS::ApiGateway::RestApi
-    Properties:
-      Name: !Sub ${AWS::StackName}-api
-      Description: !Sub API for ${AWS::StackName}
-      FailOnWarnings: true
-      EndpointConfiguration:
-        Types:
-          - EDGE
-  # ====================> api authorizer <==================== #
-  Authorizer:
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      Name: CustomAuthorizer
-      Type: TOKEN
-      RestApiId: !Ref ProfileApi
-      AuthorizerUri: !Sub
-        - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizerFunctionArn}/invocations"
-        - AuthorizerFunctionArn: !ImportValue cognito-service-CustomAuthorizer
-      IdentitySource: method.request.header.Authorization
-      AuthorizerCredentials: !GetAtt LambdaExecutionRole.Arn
-
-  # ====================> update profile api resource <==================== #
-  UpdateProfileResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt ProfileApi.RootResourceId
-      PathPart: update-profile
-      RestApiId: !Ref ProfileApi
-
-  ### profile api method ###
-  UpdateProfileMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      AuthorizationType: CUSTOM
-      HttpMethod: POST
-      ResourceId: !Ref UpdateProfileResource
-      RestApiId: !Ref ProfileApi
-      AuthorizerId: !Ref Authorizer
-      Integration:
-        IntegrationHttpMethod: POST
-        Type: AWS_PROXY
-        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateProfileFunction.Arn}/invocations
-
-  # ====================> upload image api resource <==================== #
-  UploadImageResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt ProfileApi.RootResourceId
-      PathPart: upload-image
-      RestApiId: !Ref ProfileApi
-
-  ### upload profile image method ###
-  UploadImageMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      AuthorizationType: NONE
-      HttpMethod: POST
-      ResourceId: !Ref UploadImageResource
-      RestApiId: !Ref ProfileApi
-      Integration:
-        IntegrationHttpMethod: POST
-        Type: AWS_PROXY
-        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UploadProfileImageFunction.Arn}/invocations
-
-
-  # ====================> profile api deployment resource <==================== #
-  ProfileDeployment:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn:
-        - UpdateProfileMethod
-        - UploadImageMethod
-    Properties:
-      RestApiId: !Ref ProfileApi
-      StageName: prod
-
-
-  # ==============================================================================
-  # ================================== Lambdas ===================================
-  # ==============================================================================
-
-  ProfileServiceLayer:
-    Type: AWS::Lambda::LayerVersion
-    Properties:
-      LayerName: ProfileServiceLayer
-      Description: Node.js dependencies for Profile Service
-      Content:
-        S3Bucket: !ImportValue marhabaah-base-code
-        S3Key: !Ref LambdaLayerS3Key
-      CompatibleRuntimes:
-        - nodejs20.x
-
-  # ====================> update profile <==================== #
-  UpdateProfileFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      Handler: handlers/update-profile.handler
-      Code:
-        S3Bucket: !ImportValue marhabaah-base-code
-        S3Key: !Sub ${AWS::StackName}/update-profile_${DeployTime}.zip
-      Runtime: nodejs20.x
-      Role: !GetAtt LambdaExecutionRole.Arn
-      Timeout: 30
-      Layers:
-        - !Ref ProfileServiceLayer
-      Environment:
-        Variables:
-          USER_PROFILE_TABLE: !Ref ProfilesTable
-
-  # ====================> upload profile image lambda <==================== #
-  UploadProfileImageFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      Handler: handlers/upload-profile-image.handler
-      Code:
-        S3Bucket: !ImportValue marhabaah-base-code
-        S3Key: !Sub ${AWS::StackName}/upload-profile-image_${DeployTime}.zip
-      Runtime: nodejs20.x
-      Role: !GetAtt LambdaExecutionRole.Arn
-      Timeout: 30
-      Layers:
-        - !Ref ProfileServiceLayer
-      Environment:
-        Variables:
-          USER_PROFILE_TABLE: !Ref ProfilesTable
-          
-  # ==============================================================================
-  # ========================== LAMBDA & API PERMISSIONS ==========================
-  # ==============================================================================
-  UpdateProfileApiGatewayInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt UpdateProfileFunction.Arn
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProfileApi}/*/POST/update-profile
-
+# =============================================================
+# ========================== OUTPUTS ==========================
+# =============================================================
 
 Outputs:
-  ProfilesTableName:
-    Description: Name of the profile table
-    Value: !Ref ProfilesTable
+  CurrentRegion:
+    Description: "The region in which this stack is deployed"
+    Value: !Ref AWS::Region
 
-  ProfileInteractionsTableName:
-    Description: Name of the profile interactions table
-    Value: !Ref ProfileInteractionsTable
+  CurrentAccountId:
+    Description: "The AWS Account ID in which this stack is deployed"
+    Value: !Ref AWS::AccountId
 
-  ProfileComplaintsTableName:
-    Description: Name of the profile complaints table
-    Value: !Ref ProfileComplaintsTable
+  ApiUrl:
+    Description: "API Gateway endpoint URL for Cognito application"
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/prod"
 
-  ProfileApiId:
-    Description: ID of the profile API
-    Value: !Ref ProfileApi
-
-
-
+  ApiId:
+    Description: "API Gateway endpoint URL for Cognito service"
+    Value: !Ref Api
