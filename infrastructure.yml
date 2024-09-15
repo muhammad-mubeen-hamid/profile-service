@@ -133,6 +133,8 @@ Resources:
       Code:
         S3Bucket: !Ref CodeBucket
         S3Key: !Sub ${AWS::StackName}/get-profile_${DeployTime}.js.zip
+      Layers:
+        - !Ref ServiceLayer
 
   # =========================> Update Profile <=========================
   UpdateProfile:
@@ -144,6 +146,8 @@ Resources:
       Code:
         S3Bucket: !Ref CodeBucket
         S3Key: !Sub ${AWS::StackName}/update-profile_${DeployTime}.js.zip
+      Layers:
+        - !Ref ServiceLayer
 
   # ==============================================================================
   # ========================== LAMBDA & API PERMISSIONS ==========================
