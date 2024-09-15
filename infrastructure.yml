@@ -46,13 +46,22 @@ Resources:
       Name: !Sub ${AWS::StackName}-api
       Description: !Sub API for ${AWS::StackName}
 
+  # ===============================> API v1 <===============================
+  ApiV1:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt Api.RootResourceId
+      PathPart: v1
+      RestApiId: !Ref Api
+
   # ===========================> Profile Resource <=========================
   UserResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !GetAtt Api.RootResourceId
+      ParentId: !Ref ApiV1
       PathPart: profile
       RestApiId: !Ref Api
+
   # =========================> Get Profile (GET) <===========================
   GetUserMethod:
     Type: AWS::ApiGateway::Method
@@ -84,6 +93,7 @@ Resources:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
       - GetUserMethod
+      - UpdateProfileMethod
     Properties:
       RestApiId: !Ref Api
 
