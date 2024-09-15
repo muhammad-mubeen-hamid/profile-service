@@ -127,7 +127,8 @@ Resources:
       Content:
         S3Bucket: !Ref CodeBucket
         S3Key: !Sub layers/${AWS::StackName}/layer.zip
-      CompatibleRuntimes: !Ref NodeVersion
+      CompatibleRuntimes:
+        - !Ref NodeVersion
 
   # ==========================> Get Profile <===========================
   GetProfile:
