@@ -102,16 +102,6 @@ Resources:
   # ======================================================================
   # ========================== LAMBDA FUNCTIONS ==========================
   # ======================================================================
-  AuthorizerFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      Handler: authorizer.handler
-      Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: !Ref NodeVersion
-      Code:
-        S3Bucket: !Ref CodeBucket
-        S3Key: !Sub ${AWS::StackName}/authorizer_${DeployTime}.js.zip
-
   ServiceLayer:
     Type: AWS::Lambda::LayerVersion
     Properties:
