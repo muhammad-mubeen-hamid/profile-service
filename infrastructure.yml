@@ -185,20 +185,6 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: LambdaAccessToCognito
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - cognito-idp:SignUp
-                  - cognito-idp:AdminCreateUser
-                  - cognito-idp:DescribeUserPool
-                  - cognito-idp:AdminGetUser
-                  - cognito-idp:AdminInitiateAuth
-                  - cognito-idp:RespondToAuthChallenge
-                  - cognito-idp:AdminUpdateUserAttributes
-                Resource: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}
         - PolicyName: LambdaCloudWatchLogging
           PolicyDocument:
             Version: "2012-10-17"
