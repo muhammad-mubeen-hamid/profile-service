@@ -46,19 +46,19 @@ Resources:
       Name: !Sub ${AWS::StackName}-api
       Description: !Sub API for ${AWS::StackName}
 
-  # ==========================> Get Profile (GET) <===========================
-  GetUserResource:
+  # ===========================> Profile Resource <=========================
+  UserResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt Api.RootResourceId
       PathPart: profile
       RestApiId: !Ref Api
-
+  # =========================> Get Profile (GET) <===========================
   GetUserMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: GET
-      ResourceId: !Ref GetUserResource
+      ResourceId: !Ref UserResource
       RestApiId: !Ref Api
       AuthorizationType: NONE
       Integration:
@@ -67,18 +67,11 @@ Resources:
         Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetProfile.Arn}/invocations
 
   # ========================> Update Profile (POST) <==========================
-  UpdateProfileResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt Api.RootResourceId
-      PathPart: profile
-      RestApiId: !Ref Api
-
   UpdateProfileMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: POST
-      ResourceId: !Ref UpdateProfileResource
+      ResourceId: !Ref UserResource
       RestApiId: !Ref Api
       AuthorizationType: NONE
       Integration:
