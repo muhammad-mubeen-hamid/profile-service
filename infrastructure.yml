@@ -155,7 +155,7 @@ Resources:
       FunctionName: !GetAtt GetProfile.Arn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/GET/profile
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/GET/v1/profile
 
   UpdateProfileApiGatewayInvokePermission:
     Type: AWS::Lambda::Permission
@@ -163,7 +163,7 @@ Resources:
       FunctionName: !GetAtt UpdateProfile.Arn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/POST/profile
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/POST/v1/profile
 
   # ===========================================================
   # ========================== ROLES ==========================
