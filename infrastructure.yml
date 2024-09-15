@@ -132,7 +132,7 @@ Resources:
       Runtime: !Ref NodeVersion
       Code:
         S3Bucket: !Ref CodeBucket
-        S3Key: !Sub ${AWS::StackName}/get-user_${DeployTime}.js.zip
+        S3Key: !Sub ${AWS::StackName}/get-profile_${DeployTime}.js.zip
 
   # =========================> Update Profile <=========================
   UpdateProfile:
