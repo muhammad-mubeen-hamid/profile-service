@@ -94,7 +94,8 @@ Resources:
       HttpMethod: GET
       ResourceId: !Ref ProfileResource
       RestApiId: !Ref Api
-      AuthorizationType: NONE
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref ProfileAuthorizer
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
