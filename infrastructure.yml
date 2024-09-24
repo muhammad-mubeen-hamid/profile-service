@@ -146,7 +146,7 @@ Resources:
       Name: ProfileAuthorizer
       Type: TOKEN
       RestApiId: !Ref Api
-      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn::ImportValue "cognito-service-CustomAuthorizer"}/invocations
+      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn::ImportValue"cognito-service-CustomAuthorizer"}/invocations
 
   ServiceLayer:
     Type: AWS::Lambda::LayerVersion
