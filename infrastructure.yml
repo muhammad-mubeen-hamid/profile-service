@@ -94,8 +94,7 @@ Resources:
       HttpMethod: GET
       ResourceId: !Ref ProfileResource
       RestApiId: !Ref Api
-      AuthorizationType: CUSTOM
-      AuthorizerId: !Ref Authorizer
+      AuthorizationType: NONE
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
@@ -140,13 +139,13 @@ Resources:
   # ======================================================================
   # ========================== LAMBDA FUNCTIONS ==========================
   # ======================================================================
-  Authorizer:
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      Name: ProfileAuthorizer
-      Type: TOKEN
-      RestApiId: !Ref Api
-      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn::ImportValue"cognito-service-CustomAuthorizer"}/invocations
+#  Authorizer:
+#    Type: AWS::ApiGateway::Authorizer
+#    Properties:
+#      Name: ProfileAuthorizer
+#      Type: TOKEN
+#      RestApiId: !Ref Api
+#      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn::ImportValue"cognito-service-CustomAuthorizer"}/invocations
 
   ServiceLayer:
     Type: AWS::Lambda::LayerVersion
