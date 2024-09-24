@@ -142,7 +142,7 @@ Resources:
   ProfileAuthorizer:
     Type: AWS::ApiGateway::Authorizer
     Properties:
-      Name: Authorizer
+      Name: ProfileAuthorizer
       Type: TOKEN
       RestApiId: !Ref Api
       AuthorizerUri:
