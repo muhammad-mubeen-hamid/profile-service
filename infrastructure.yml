@@ -135,7 +135,7 @@ Resources:
         - ResourcePath: '/*'
           HttpMethod: '*'
           LoggingLevel: 'INFO'
-          DataTraceEnabled: false
+          DataTraceEnabled: true
 
   # ======================================================================
   # ========================== LAMBDA FUNCTIONS ==========================
