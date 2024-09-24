@@ -139,13 +139,16 @@ Resources:
   # ======================================================================
   # ========================== LAMBDA FUNCTIONS ==========================
   # ======================================================================
-#  Authorizer:
-#    Type: AWS::ApiGateway::Authorizer
-#    Properties:
-#      Name: ProfileAuthorizer
-#      Type: TOKEN
-#      RestApiId: !Ref Api
-#      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn::ImportValue"cognito-service-CustomAuthorizer"}/invocations
+  ProfileAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: Authorizer
+      Type: TOKEN
+      RestApiId: !Ref Api
+      AuthorizerUri:
+        Fn::Sub:
+          - arn:aws:apigateway:${Region}:lambda:path/2015-03-31/functions/${CustomAuthorizerArn}/invocations
+          - CustomAuthorizerArn: !ImportValue "cognito-service-CustomAuthorizer"
 
   ServiceLayer:
     Type: AWS::Lambda::LayerVersion
