@@ -147,7 +147,7 @@ Resources:
       RestApiId: !Ref Api
       AuthorizerUri:
         Fn::Sub:
-          - arn:aws:apigateway:${Region}:lambda:path/2015-03-31/functions/${CustomAuthorizerArn}/invocations
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CustomAuthorizerArn}/invocations
           - CustomAuthorizerArn: !ImportValue "cognito-service-CustomAuthorizer"
 
   ServiceLayer:
