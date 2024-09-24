@@ -90,7 +90,7 @@ jobs:
         run: |
           echo "Deploying to ${{ env.Stage }} at ${{ env.CurrentTime }}"
           aws cloudformation deploy \
-            --template-file ./infrastructure.yml \
+            --template-file ./stack/infrastructure.yml \
             --stack-name ${{ env.ServiceName }} \
             --capabilities CAPABILITY_IAM \
             --parameter-overrides $(jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]' ./test.config.json) DeployTime=${{ env.CurrentTime }}

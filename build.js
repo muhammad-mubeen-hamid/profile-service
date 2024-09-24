@@ -23,6 +23,7 @@ const buildFunctions = handlerFiles.map(async (file) => {
         platform: 'node',
         target: 'node20',
         outfile: outFile,
+        treeShaking: true,
         plugins: [externals.nodeExternalsPlugin()],
     });
 

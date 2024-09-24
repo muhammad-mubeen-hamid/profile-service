@@ -1,6 +1,6 @@
 import { S3 } from 'aws-sdk';
-import { ImageServiceImplementation } from '../service/implementation/image-service';
-import { ImageRepositoryImplementation } from '../repository/implementation/image-repository';
+import { ImageServiceImplementation } from '../service/image-service';
+import { ImageRepositoryImplementation } from '../repository/image-repository';
 
 export class ImageBootstrap {
     static initializeImageService(): { imageService: ImageServiceImplementation } {

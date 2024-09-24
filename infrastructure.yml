@@ -38,6 +38,24 @@ Resources:
         WriteCapacityUnits: 5
 
   # =================================================================
+  # ========================== API Schemas ==========================
+  # =================================================================
+  UpdateProfileSchema:
+    Type: AWS::ApiGateway::Model
+    Properties:
+      RestApiId: !Ref Api
+      ContentType: application/json
+      Schema:
+        type: object
+        properties:
+          sub:
+            type: string
+          phone:
+            type: string
+        required:
+          - sub
+
+  # =================================================================
   # ========================== API GATEWAY ==========================
   # =================================================================
   Api:
@@ -45,6 +63,13 @@ Resources:
     Properties:
       Name: !Sub ${AWS::StackName}-api
       Description: !Sub API for ${AWS::StackName}
+
+  RequestValidator:
+    Type: AWS::ApiGateway::RequestValidator
+    Properties:
+      RestApiId: !Ref Api
+      ValidateRequestBody: true
+      ValidateRequestParameters: false
 
   # ===============================> API v1 <===============================
   ApiV1:
@@ -55,7 +80,7 @@ Resources:
       RestApiId: !Ref Api
 
   # ===========================> Profile Resource <=========================
-  UserResource:
+  ProfileResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !Ref ApiV1
@@ -63,13 +88,14 @@ Resources:
       RestApiId: !Ref Api
 
   # =========================> Get Profile (GET) <===========================
-  GetUserMethod:
+  GetProfileMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: GET
-      ResourceId: !Ref UserResource
+      ResourceId: !Ref ProfileResource
       RestApiId: !Ref Api
-      AuthorizationType: NONE
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref Authorizer
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
@@ -80,9 +106,11 @@ Resources:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: POST
-      ResourceId: !Ref UserResource
+      ResourceId: !Ref ProfileResource
       RestApiId: !Ref Api
       AuthorizationType: NONE
+      RequestModels:
+        application/json: !Ref UpdateProfileSchema
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
@@ -92,7 +120,7 @@ Resources:
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
-      - GetUserMethod
+      - GetProfile
       - UpdateProfileMethod
     Properties:
       RestApiId: !Ref Api
@@ -112,6 +140,14 @@ Resources:
   # ======================================================================
   # ========================== LAMBDA FUNCTIONS ==========================
   # ======================================================================
+  Authorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: ProfileAuthorizer
+      Type: TOKEN
+      RestApiId: !Ref Api
+      AuthorizerUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Fn::ImportValue "cognito-service-CustomAuthorizer"}/invocations
+
   ServiceLayer:
     Type: AWS::Lambda::LayerVersion
     Properties:
@@ -135,6 +171,9 @@ Resources:
         S3Key: !Sub ${AWS::StackName}/get-profile_${DeployTime}.js.zip
       Layers:
         - !Ref ServiceLayer
+      Environment:
+        Variables:
+          PROFILE_TABLE: !Ref ProfileTable
 
   # =========================> Update Profile <=========================
   UpdateProfile:
@@ -148,6 +187,9 @@ Resources:
         S3Key: !Sub ${AWS::StackName}/update-profile_${DeployTime}.js.zip
       Layers:
         - !Ref ServiceLayer
+      Environment:
+        Variables:
+          PROFILE_TABLE: !Ref ProfileTable
 
   # ==============================================================================
   # ========================== LAMBDA & API PERMISSIONS ==========================

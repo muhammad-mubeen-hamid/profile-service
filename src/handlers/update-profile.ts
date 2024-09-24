@@ -1,8 +1,8 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
-import { UserProfile } from '../repository/interface/profile-interface';
-import {ProfileBootstrap} from "../bootstrap/profile-bootstrap";
+import {initializeProfileServices} from "../bootstrap/profile-bootstrap";
+import {UserProfile} from "../repository/profile-repository";
 
-const { profileService } = ProfileBootstrap.initializeProfileService();
+const { saveUserProfile } = initializeProfileServices();
 
 export const handler: APIGatewayProxyHandler = async (event) => {
     try {
@@ -15,7 +15,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
             };
         }
 
-        const savedProfile = await profileService.saveUserProfile(userProfile);
+        const savedProfile = await saveUserProfile(userProfile);
         return {
             statusCode: 200,
             body: JSON.stringify(savedProfile),

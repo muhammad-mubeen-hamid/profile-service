@@ -1,6 +1,13 @@
 import { S3 } from 'aws-sdk';
 import {ImageRepository} from "../interface/image-repository";
 
+export interface ProfileImages {
+    UserId: string;
+    PictureId: string;
+    PictureUrl: string;
+    [key: string]: any; // Additional attributes
+}
+
 export class ImageRepositoryImplementation implements ImageRepository {
     private s3: S3;
     private bucketName: string;

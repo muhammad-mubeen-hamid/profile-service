@@ -1,5 +1,5 @@
-import {ImageRepositoryImplementation} from "../../repository/implementation/image-repository";
-import {ImageService} from "../interface/image-interface";
+import {ImageRepositoryImplementation} from "../repository/image-repository";
+import {ImageService} from "./interface/image-interface";
 import {
     AppResponse,
     AppResponseSuccessBody,
