@@ -125,7 +125,7 @@ Resources:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: POST
-      ResourceId: !Ref ProfileResource
+      ResourceId: !Ref ProfileByUserIdMethod
       RestApiId: !Ref Api
       AuthorizationType: NONE
       RequestModels:
