@@ -114,7 +114,7 @@ Resources:
       ResourceId: !Ref ProfileByUserIdMethod
       RestApiId: !Ref Api
       AuthorizationType: CUSTOM
-      AuthorizerId: !ImportValue ApiAuthorizerId
+      AuthorizerId: !Ref ApiAuthorizer
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
