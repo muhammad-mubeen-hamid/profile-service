@@ -12,6 +12,7 @@
   "devDependencies": {
     "@anatine/esbuild-decorators": "^0.2.19",
     "@aws-sdk/types": "^3.609.0",
+    "aws-sdk": "^2.1675.0",
     "@types/aws-lambda": "^8.10.145",
     "@types/cfn-response": "^1.0.8",
     "@types/jsonwebtoken": "^9.0.6",
