@@ -87,15 +87,23 @@ Resources:
       PathPart: profile
       RestApiId: !Ref Api
 
+  # =========================> Profile/UserID Methods <======================
+  ProfileByUserIdMethod:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ProfileResource
+      PathPart: profileId
+      RestApiId: !Ref Api
+
   # =========================> Get Profile (GET) <===========================
   GetProfileMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: GET
-      ResourceId: !Ref ProfileResource
+      ResourceId: !Ref ProfileByUserIdMethod
       RestApiId: !Ref Api
       AuthorizationType: CUSTOM
-      AuthorizerId: !Ref ProfileAuthorizer
+      AuthorizerId: !ImportValue ApiAuthorizerId
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
@@ -140,17 +148,6 @@ Resources:
   # ======================================================================
   # ========================== LAMBDA FUNCTIONS ==========================
   # ======================================================================
-  ProfileAuthorizer:
-    Type: AWS::ApiGateway::Authorizer
-    Properties:
-      Name: ProfileAuthorizer
-      Type: TOKEN
-      RestApiId: !Ref Api
-      AuthorizerUri:
-        Fn::Sub:
-          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CustomAuthorizerArn}/invocations
-          - CustomAuthorizerArn: !ImportValue "cognito-service-CustomAuthorizer"
-      IdentitySource: method.request.header.Authorization
 
   ServiceLayer:
     Type: AWS::Lambda::LayerVersion
