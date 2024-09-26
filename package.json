@@ -28,8 +28,10 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@muhammad-mubeen-hamid/marhaba-commons": "^1.0.6-a",
-    "aws-sdk": "^2.1667.0",
-    "jsonwebtoken": "^9.0.2"
+    "@muhammad-mubeen-hamid/marhaba-commons": "^1.0.6-f",
+    "axios": "^1.7.7",
+    "crypto-js": "4.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "jwk-to-pem": "^2.0.6"
   }
 }
