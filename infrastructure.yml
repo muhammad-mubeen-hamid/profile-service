@@ -119,6 +119,8 @@ Resources:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
         Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetProfile.Arn}/invocations
+      RequestParameters:
+        method.request.path.profileId: true
 
   # ========================> Update Profile (POST) <==========================
   UpdateProfileMethod:
@@ -134,6 +136,8 @@ Resources:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
         Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateProfile.Arn}/invocations
+      RequestParameters:
+        method.request.path.profileId: true
 
 
   ApiDeployment:
