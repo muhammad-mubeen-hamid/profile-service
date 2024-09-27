@@ -103,7 +103,7 @@ Resources:
       RestApiId: !Ref Api
 
   # =======================> Sub Resource - /{profileId} <=====================
-  ProfileByUserIdResource:
+  ProfileByIdResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !Ref ProfileResource
@@ -115,7 +115,7 @@ Resources:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: GET
-      ResourceId: !Ref ProfileByUserIdResource
+      ResourceId: !Ref ProfileByIdResource
       RestApiId: !Ref Api
       AuthorizationType: CUSTOM
       AuthorizerId: !Ref ApiAuthorizer
@@ -131,7 +131,7 @@ Resources:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: POST
-      ResourceId: !Ref ProfileByUserIdResource
+      ResourceId: !Ref ProfileByIdResource
       RestApiId: !Ref Api
       AuthorizationType: NONE
       RequestModels:
