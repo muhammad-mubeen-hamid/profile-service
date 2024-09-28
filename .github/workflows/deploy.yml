@@ -86,6 +86,9 @@ jobs:
             aws s3 cp "$zip_name" "s3://${{ env.CodeBucket }}/${{ env.ServiceName }}/${zip_name}"
           done
 
+      - name: Validate CloudFormation Template
+        run: aws cloudformation validate-template --template-body file://infrastructure.yml
+
       - name: Deploy using CloudFormation
         run: |
           echo "Deploying to ${{ env.Stage }} at ${{ env.CurrentTime }}"
