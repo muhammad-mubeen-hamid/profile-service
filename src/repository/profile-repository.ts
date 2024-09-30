@@ -1,30 +1,53 @@
-import { DynamoDB } from 'aws-sdk';
+import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import { Profile } from '@muhammad-mubeen-hamid/marhaba-commons';
+import PutItemInput = DocumentClient.PutItemInput;
 
-export interface UserProfile {
-    email: string;
-    phone: string;
+// Initialize environment variables at module level
+const region = process.env.REGION;
+const tableName = process.env.PROFILE_TABLE_NAME;
+
+if (!region || !tableName) {
+    throw new Error(
+        `Invalid environment variables. REGION: ${region}, PROFILE_TABLE_NAME: ${tableName}`,
+    );
 }
 
-const dynamoDb = new DynamoDB.DocumentClient();
+let dbClient: DocumentClient | null = null;
 
-export const saveUserProfile = async (tableName: string, userProfile: UserProfile): Promise<UserProfile> => {
-    const params = {
-        TableName: tableName,
-        Item: {
-            email: userProfile.email,
-            phone: userProfile.phone,
-        },
-    };
-    await dynamoDb.put(params).promise();
-    return userProfile;
+const getDBClient = (): DocumentClient => {
+    if (!dbClient) {
+        dbClient = new DocumentClient({ region });
+    }
+    return dbClient;
 };
 
-export const getUserProfile = async (tableName: string, email: string): Promise<UserProfile | null> => {
-    const params = {
-        TableName: tableName,
+export const getProfileUsingRepository = async (
+    email: string,
+): Promise<Profile | null> => {
+    const client = getDBClient();
+
+    const params: DocumentClient.GetItemInput = {
         Key: { email },
+        TableName: tableName,
     };
-    const result = await dynamoDb.get(params).promise();
-    return result.Item as UserProfile;
+
+    const result = await client.get(params).promise();
+    return result.Item as Profile | null;
 };
 
+export const updateProfileUsingRepository = async (
+    profile: Profile,
+): Promise<Profile> => {
+    const client = getDBClient();
+
+    const params: PutItemInput = {
+        Item: {
+            email: profile.email,
+            phone: profile.phone,
+        },
+        TableName: tableName,
+    };
+
+    await client.put(params).promise();
+    return profile;
+};

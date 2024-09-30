@@ -179,10 +179,11 @@ Resources:
       CompatibleRuntimes:
         - !Ref NodeVersion
 
-  # ==========================> Get Profile <===========================
+  # ==========================> Authorizer <===========================
   AuthorizerFunction:
     Type: AWS::Lambda::Function
     Properties:
+      FunctionName: !Sub ${AWS::StackName}-authorizer
       Handler: authorizer.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: !Ref NodeVersion
@@ -196,11 +197,11 @@ Resources:
           USER_POOL_ID: !ImportValue cognito-service-UserPoolId
           REGION: !Ref AWS::Region
 
-
   # ==========================> Get Profile <===========================
   GetProfile:
     Type: AWS::Lambda::Function
     Properties:
+      FunctionName: !Sub ${AWS::StackName}-get-profile
       Handler: get-profile.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: !Ref NodeVersion
@@ -217,6 +218,7 @@ Resources:
   UpdateProfile:
     Type: AWS::Lambda::Function
     Properties:
+      FunctionName: !Sub ${AWS::StackName}-update-profile
       Handler: update-profile.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: !Ref NodeVersion

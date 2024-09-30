@@ -1,49 +1,51 @@
 // service/profile-service.ts
-import { saveUserProfile, getUserProfile, UserProfile } from '../repository/profile-repository';
-import { AppResponse, SendResponse, AppResponseSuccessBody, ProfileCodes } from '@muhammad-mubeen-hamid/marhaba-commons';
+import {
+    AppResponse,
+    AppResponseSuccessBody,
+    Profile,
+    ProfileCodes,
+    SendResponse,
+} from '@muhammad-mubeen-hamid/marhaba-commons';
+import { getProfileUsingRepository, updateProfileUsingRepository } from '../repository/profile-repository';
 
-export const saveUserProfileService = async (tableName: string, userProfile: UserProfile): Promise<AppResponse<UserProfile>> => {
+export const getProfile = async (email: string): Promise<AppResponse<Profile | null>> => {
     try {
-        const savedProfile = await saveUserProfile(tableName, userProfile);
-        const success: AppResponseSuccessBody<UserProfile> = {
+        const userProfile = await getProfileUsingRepository(email);
+        const success: AppResponseSuccessBody<Profile | null> = {
+            data: userProfile,
+            message: ProfileCodes.ALL_OKAY,
             success: true,
-            message: ProfileCodes.PROFILE_UPDATED,
-            data: savedProfile,
         };
-        return SendResponse({ statusCode: 200, body: success });
+        return SendResponse({ body: success, statusCode: 200 });
     } catch (error) {
+        console.log(error);
         return SendResponse({
-            statusCode: 500,
             body: {
+                message: ProfileCodes.INTERNAL_SERVER_ERROR,
                 success: false,
-                message: {
-                    code: 'INTERNAL_SERVER_ERROR',
-                    content: 'Internal server error',
-                },
             },
+            statusCode: 500,
         });
     }
 };
 
-export const getUserProfileService = async (tableName: string, email: string): Promise<AppResponse<UserProfile | null>> => {
+export const updateProfile = async (profile: Profile): Promise<AppResponse<Profile>> => {
     try {
-        const userProfile = await getUserProfile(tableName, email);
-        const success: AppResponseSuccessBody<UserProfile | null> = {
+        const savedProfile = await updateProfileUsingRepository(profile);
+        const success: AppResponseSuccessBody<Profile> = {
+            data: savedProfile,
+            message: ProfileCodes.PROFILE_UPDATED,
             success: true,
-            message: ProfileCodes.ALL_OKAY,
-            data: userProfile,
         };
-        return SendResponse({ statusCode: 200, body: success });
+        return SendResponse({ body: success, statusCode: 200 });
     } catch (error) {
+        console.log(error);
         return SendResponse({
-            statusCode: 500,
             body: {
+                message: ProfileCodes.INTERNAL_SERVER_ERROR,
                 success: false,
-                message: {
-                    code: 'INTERNAL_SERVER_ERROR',
-                    content: 'Internal server error',
-                },
             },
+            statusCode: 500,
         });
     }
 };

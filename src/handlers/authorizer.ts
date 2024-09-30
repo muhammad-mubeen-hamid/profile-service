@@ -1,6 +1,6 @@
 import { APIGatewayTokenAuthorizerEvent, AuthResponse, PolicyDocument } from 'aws-lambda';
 import axios from 'axios';
-import { JwtPayload, verify, VerifyErrors } from 'jsonwebtoken';
+import { JwtPayload, VerifyErrors, verify } from 'jsonwebtoken';
 import jwkToPem from 'jwk-to-pem';
 
 interface CognitoJwtPayload extends JwtPayload {
