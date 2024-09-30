@@ -40,20 +40,6 @@ Resources:
   # ============================================================================================================================================================
   # ================================================================= API SCHEMA ===============================================================================
   # ============================================================================================================================================================
-  UpdateProfileSchema:
-    Type: AWS::ApiGateway::Model
-    Properties:
-      RestApiId: !Ref Api
-      ContentType: application/json
-      Schema:
-        type: object
-        properties:
-          sub:
-            type: string
-          phone:
-            type: string
-        required:
-          - sub
 
   # ============================================================================================================================================================
   # ================================================================= API GATEWAY ==============================================================================
@@ -133,9 +119,8 @@ Resources:
       HttpMethod: POST
       ResourceId: !Ref ProfileByIdResource
       RestApiId: !Ref Api
-      AuthorizationType: NONE
-      RequestModels:
-        application/json: !Ref UpdateProfileSchema
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref ApiAuthorizer
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
