@@ -2,7 +2,7 @@ import { AppResponseFailureBody, Profile, ProfileCodes, SendResponse } from '@mu
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { updateProfile } from '../service/profile-service';
 
-const handler = async (event: APIGatewayProxyEvent) => {
+exports.handler = async (event: APIGatewayProxyEvent) => {
     const { pathParameters } = event;
     if (!pathParameters) {
         const failureResponse: AppResponseFailureBody = {
@@ -47,5 +47,3 @@ const handler = async (event: APIGatewayProxyEvent) => {
         statusCode: response.statusCode,
     };
 };
-
-export { handler };
