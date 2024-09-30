@@ -1,5 +1,6 @@
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { Profile } from '@muhammad-mubeen-hamid/marhaba-commons';
+import GetItemInput = DocumentClient.GetItemInput;
 import PutItemInput = DocumentClient.PutItemInput;
 
 // Initialize environment variables at module level
@@ -26,7 +27,7 @@ export const getProfileUsingRepository = async (
 ): Promise<Profile | null> => {
     const client = getDBClient();
 
-    const params: DocumentClient.GetItemInput = {
+    const params: GetItemInput = {
         Key: { email },
         TableName: tableName,
     };
