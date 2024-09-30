@@ -1,7 +1,6 @@
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import { DynamoDBClient, GetItemCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Profile } from '@muhammad-mubeen-hamid/marhaba-commons';
-import GetItemInput = DocumentClient.GetItemInput;
-import PutItemInput = DocumentClient.PutItemInput;
 
 // Initialize environment variables at module level
 const region = process.env.REGION;
@@ -13,11 +12,11 @@ if (!region || !tableName) {
     );
 }
 
-let dbClient: DocumentClient | null = null;
+let dbClient: DynamoDBClient | null = null;
 
-const getDBClient = (): DocumentClient => {
+const getDBClient = (): DynamoDBClient => {
     if (!dbClient) {
-        dbClient = new DocumentClient({ region });
+        dbClient = new DynamoDBClient({ region });
     }
     return dbClient;
 };
@@ -27,13 +26,19 @@ export const getProfileUsingRepository = async (
 ): Promise<Profile | null> => {
     const client = getDBClient();
 
-    const params: GetItemInput = {
-        Key: { email },
+    const params = {
+        Key: marshall({ email }),
         TableName: tableName,
     };
 
-    const result = await client.get(params).promise();
-    return result.Item as Profile | null;
+    const command = new GetItemCommand(params);
+    const result = await client.send(command);
+
+    if (result.Item) {
+        return unmarshall(result.Item) as Profile;
+    }
+    return null;
+
 };
 
 export const updateProfileUsingRepository = async (
@@ -41,14 +46,16 @@ export const updateProfileUsingRepository = async (
 ): Promise<Profile> => {
     const client = getDBClient();
 
-    const params: PutItemInput = {
-        Item: {
+    const params = {
+        Item: marshall({
             email: profile.email,
             phone: profile.phone,
-        },
+        }),
         TableName: tableName,
     };
 
-    await client.put(params).promise();
+    const command = new PutItemCommand(params);
+    await client.send(command);
+
     return profile;
 };
