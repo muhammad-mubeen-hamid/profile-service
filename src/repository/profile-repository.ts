@@ -38,7 +38,6 @@ export const getProfileUsingRepository = async (
         return unmarshall(result.Item) as Profile;
     }
     return null;
-
 };
 
 export const updateProfileUsingRepository = async (
