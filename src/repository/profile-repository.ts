@@ -54,8 +54,11 @@ export const updateProfileUsingRepository = async (
         TableName: tableName,
     };
 
+    console.log('params', params);
+
     const command = new PutItemCommand(params);
-    await client.send(command);
+    const response = await client.send(command);
+    console.log('response', response);
 
     return profile;
 };
