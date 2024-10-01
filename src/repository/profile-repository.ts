@@ -49,6 +49,7 @@ export const updateProfileUsingRepository = async (
         Item: marshall({
             email: profile.email,
             phone: profile.phone,
+            profileId: profile.id,
         }),
         TableName: tableName,
     };

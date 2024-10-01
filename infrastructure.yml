@@ -28,10 +28,10 @@ Resources:
     Properties:
       TableName: !Sub Profile
       AttributeDefinitions:
-        - AttributeName: userId
+        - AttributeName: profileId
           AttributeType: S
       KeySchema:
-        - AttributeName: userId
+        - AttributeName: profileId
           KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5
