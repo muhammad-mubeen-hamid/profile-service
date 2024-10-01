@@ -197,7 +197,8 @@ Resources:
         - !Ref ServiceLayer
       Environment:
         Variables:
-          PROFILE_TABLE: !Ref ProfileTable
+          REGION: !Ref AWS::Region
+          PROFILE_TABLE_NAME: !Ref ProfileTable
 
   # =========================> Update Profile <=========================
   UpdateProfile:
@@ -214,7 +215,8 @@ Resources:
         - !Ref ServiceLayer
       Environment:
         Variables:
-          PROFILE_TABLE: !Ref ProfileTable
+          REGION: !Ref AWS::Region
+          PROFILE_TABLE_NAME: !Ref ProfileTable
 
   # ============================================================================================================================================================
   # ============================================================= LAMBDA & API PERMISSIONS =====================================================================
