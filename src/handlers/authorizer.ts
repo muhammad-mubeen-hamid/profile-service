@@ -1,9 +1,12 @@
+import * as MarhabaCommons from '@muhammad-mubeen-hamid/marhaba-commons';
 import { APIGatewayTokenAuthorizerEvent, AuthResponse, PolicyDocument } from 'aws-lambda';
-import { ParsedJWK, getCognitoPublicKeys, verifyToken } from '@muhammad-mubeen-hamid/marhaba-commons';
+
+console.log('MarhabaCommons:', MarhabaCommons);
+
 
 const jwksUrl = `https://cognito-idp.${process.env.REGION}.amazonaws.com/${process.env.USER_POOL_ID}/.well-known/jwks.json`;
 
-let cachedKeys: ParsedJWK[];
+let cachedKeys: MarhabaCommons.ParsedJWK[];
 
 const generatePolicy = (principalId: string, effect: 'Allow' | 'Deny', resource: string): PolicyDocument => {
     console.log(`Generating policy: principalId=${principalId}, effect=${effect}, resource=${resource}`);
@@ -35,11 +38,11 @@ exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthRes
         console.log('Retrieving Cognito public keys');
         if (!cachedKeys) {
             console.log('Fetching Cognito public keys');
-            cachedKeys = await getCognitoPublicKeys(jwksUrl);
+            cachedKeys = await MarhabaCommons.getCognitoPublicKeys(jwksUrl);
         }
 
         console.log('Verifying token');
-        const decoded = verifyToken(token, cachedKeys);
+        const decoded = MarhabaCommons.verifyToken(token, cachedKeys);
         console.log('Decoded token:', decoded);
         if (!decoded) {
             console.log('Token verification failed');
