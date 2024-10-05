@@ -1,18 +1,9 @@
 import { APIGatewayTokenAuthorizerEvent, AuthResponse, PolicyDocument } from 'aws-lambda';
-import { ParsedJWK, verifyToken } from '@muhammad-mubeen-hamid/marhaba-commons';
+import { ParsedJWK, getCognitoPublicKeys, getSecretFromSM, verifyToken } from '@muhammad-mubeen-hamid/marhaba-commons';
 
 const jwksUrl = `https://cognito-idp.${process.env.REGION}.amazonaws.com/${process.env.USER_POOL_ID}/.well-known/jwks.json`;
 
-const cachedKeys: ParsedJWK[] = [
-    {
-        alg: 'RS256',
-        e: 'AQAB',
-        kid: 'test-key',
-        kty: 'RSA',
-        n: 'test-key',
-        use: 'sig',
-    },
-];
+let cachedKeys: ParsedJWK[];
 
 const generatePolicy = (principalId: string, effect: 'Allow' | 'Deny', resource: string): PolicyDocument => {
     console.log(`Generating policy: principalId=${principalId}, effect=${effect}, resource=${resource}`);
@@ -28,9 +19,8 @@ const generatePolicy = (principalId: string, effect: 'Allow' | 'Deny', resource:
     };
 };
 
-exports.handler = (event: APIGatewayTokenAuthorizerEvent): AuthResponse => {
+exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthResponse> => {
     console.log('Event received:', event);
-    console.log('Authorization token:', jwksUrl);
 
     const token = event.authorizationToken;
     if (!token) {
@@ -42,11 +32,13 @@ exports.handler = (event: APIGatewayTokenAuthorizerEvent): AuthResponse => {
     }
 
     try {
+        const dataaa = await getSecretFromSM('marhaba/secret');
+        console.log('dataaa:', dataaa);
         console.log('Retrieving Cognito public keys');
-        // if (!cachedKeys) {
-        //     console.log('Fetching Cognito public keys');
-        //     cachedKeys = await getCognitoPublicKeys(jwksUrl);
-        // }
+        if (!cachedKeys) {
+            console.log('Fetching Cognito public keys');
+            cachedKeys = await getCognitoPublicKeys(jwksUrl);
+        }
 
         console.log('Verifying token');
         const decoded = verifyToken(token, cachedKeys);
