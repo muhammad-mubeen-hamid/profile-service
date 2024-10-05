@@ -1,6 +1,6 @@
 import { APIGatewayTokenAuthorizerEvent, AuthResponse, PolicyDocument } from 'aws-lambda';
+import { JwtPayload, verify } from 'jsonwebtoken';
 import axios from 'axios';
-import { JwtPayload, VerifyErrors, verify } from 'jsonwebtoken';
 import jwkToPem from 'jwk-to-pem';
 
 interface CognitoJwtPayload extends JwtPayload {
@@ -55,11 +55,12 @@ exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthRes
 
         console.log('Verifying token');
         const decoded = verifyToken(token, keys);
+        console.log('Decoded token:', decoded);
         if (!decoded) {
             console.log('Token verification failed');
             return {
-                principalId: 'unauthorized',
                 policyDocument: generatePolicy('unauthorized', 'Deny', event.methodArn),
+                principalId: 'unauthorized',
             };
         }
 
@@ -67,26 +68,27 @@ exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthRes
         const userId = decoded.sub;
 
         return {
-            principalId: userId,
-            policyDocument: generatePolicy(userId, 'Allow', event.methodArn),
             context: {
-                userId,
                 email: decoded.email,
+                userId,
             },
+            policyDocument: generatePolicy(userId, 'Allow', event.methodArn),
+            principalId: userId,
         };
     } catch (error) {
         console.error('Authorization error:', error);
         return {
-            principalId: 'unauthorized',
             policyDocument: generatePolicy('unauthorized', 'Deny', event.methodArn),
+            principalId: 'unauthorized',
         };
     }
 };
 
 const verifyToken = (token: string, keys: any): CognitoJwtPayload | null => {
     // Strip 'Bearer' from the token if present
-    if (token.startsWith("Bearer ")) {
-        token = token.slice(7);
+    if (token.startsWith('Bearer ')) {
+        const sliceIndex = 7;
+        token = token.slice(sliceIndex);
     }
 
     console.log('Token after removing Bearer:', token);
@@ -94,7 +96,8 @@ const verifyToken = (token: string, keys: any): CognitoJwtPayload | null => {
     console.log('Token parts:', token.split('.'));
 
     // Parse the header (first part of the JWT)
-    const decodedHeader: any = JSON.parse(Buffer.from(token.split('.')[0], 'base64').toString());
+    const splitToken = 0;
+    const decodedHeader = JSON.parse(Buffer.from(token.split('.')[splitToken], 'base64').toString());
     console.log('Decoded header:', decodedHeader);
 
     // Find the matching key based on the kid in the token header
@@ -112,7 +115,7 @@ const verifyToken = (token: string, keys: any): CognitoJwtPayload | null => {
     try {
         console.log('Verifying JWT with PEM');
         return verify(token, pem, { algorithms: ['RS256'] }) as CognitoJwtPayload;
-    } catch (error: VerifyErrors | any) {
+    } catch (error) {
         console.error('Token verification failed:', error);
         return null;
     }
