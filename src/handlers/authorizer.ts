@@ -1,5 +1,5 @@
 import { APIGatewayTokenAuthorizerEvent, AuthResponse, PolicyDocument } from 'aws-lambda';
-import { ParsedJWK, getCognitoPublicKeys, verifyToken } from '@muhammad-mubeen-hamid/marhaba-commons';
+import { ParsedJWK, getCognitoPublicKeys, getSecretFromSM, verifyToken } from '@muhammad-mubeen-hamid/marhaba-commons';
 
 const jwksUrl = `https://cognito-idp.${process.env.REGION}.amazonaws.com/${process.env.USER_POOL_ID}/.well-known/jwks.json`;
 
@@ -22,12 +22,6 @@ const generatePolicy = (principalId: string, effect: 'Allow' | 'Deny', resource:
 exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthResponse> => {
     console.log('Event received:', event);
 
-    if (!cachedKeys) {
-        console.log('Fetching Cognito public keys');
-        const keys = await getCognitoPublicKeys(jwksUrl);
-        cachedKeys = keys;
-    }
-
     const token = event.authorizationToken;
     if (!token) {
         console.log('No token provided');
@@ -38,11 +32,16 @@ exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthRes
     }
 
     try {
+        const sec = await getSecretFromSM('path-to-your-secret');
+        console.log('Secret:', sec);
         console.log('Retrieving Cognito public keys');
-        const keys = await getCognitoPublicKeys(jwksUrl);
+        if (!cachedKeys) {
+            console.log('Fetching Cognito public keys');
+            cachedKeys = await getCognitoPublicKeys(jwksUrl);
+        }
 
         console.log('Verifying token');
-        const decoded = verifyToken(token, keys);
+        const decoded = verifyToken(token, cachedKeys);
         console.log('Decoded token:', decoded);
         if (!decoded) {
             console.log('Token verification failed');
