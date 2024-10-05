@@ -7,12 +7,13 @@ import {
     SendResponse,
 } from '@muhammad-mubeen-hamid/marhaba-commons';
 import { getProfileUsingRepository, updateProfileUsingRepository } from '../repository/profile-repository';
+import { HttpStatusCode } from 'axios';
 
 export const getProfile = async (email: string): Promise<AppResponse<Profile | null>> => {
     try {
-        const userProfile = await getProfileUsingRepository(email);
+        const profile = await getProfileUsingRepository(email);
         const success: AppResponseSuccessBody<Profile | null> = {
-            data: userProfile,
+            data: profile,
             message: ProfileCodes.ALL_OKAY,
             success: true,
         };
@@ -29,8 +30,22 @@ export const getProfile = async (email: string): Promise<AppResponse<Profile | n
     }
 };
 
-export const updateProfile = async (profile: Profile): Promise<AppResponse<Profile>> => {
+export const updateProfile = async (email: string, profile: Profile): Promise<AppResponse<Profile>> => {
     try {
+        const existingProfile = await getProfile(email);
+        console.log('existingProfile:', existingProfile);
+
+        if (existingProfile.statusCode !== HttpStatusCode.Ok) {
+            return SendResponse({
+                body: {
+                    message: ProfileCodes.PROFILE_NOT_FOUND,
+                    success: false,
+                },
+                statusCode: 404,
+            });
+        }
+
+
         const savedProfile = await updateProfileUsingRepository(profile);
         const success: AppResponseSuccessBody<Profile> = {
             data: savedProfile,

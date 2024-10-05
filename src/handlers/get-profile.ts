@@ -8,28 +8,28 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         message: ProfileCodes.INVALID_PATH_PARAMETERS,
         success: false,
     };
-    const body = JSON.stringify(SendResponse({
+    const pathParam = JSON.stringify(SendResponse({
         body: failureResponse,
         statusCode: 400,
     }));
 
     if (!pathParameters) {
         return {
-            body: body,
+            body: pathParam,
             statusCode: 400,
         };
     }
 
-    const { userId } = pathParameters;
+    const { profileId } = pathParameters;
 
-    if (!userId) {
+    if (!profileId) {
         return {
-            body: body,
+            body: pathParam,
             statusCode: 400,
         };
     }
 
-    const response = await getProfile(userId);
+    const response = await getProfile(profileId);
 
     return {
         body: JSON.stringify(response.body),

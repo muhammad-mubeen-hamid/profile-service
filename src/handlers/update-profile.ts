@@ -1,9 +1,57 @@
-import { AppResponseFailureBody, Profile, ProfileCodes, SendResponse } from '@muhammad-mubeen-hamid/marhaba-commons';
+import {
+    AppResponseFailureBody,
+    CognitoCodes,
+    Profile,
+    ProfileCodes,
+    SendResponse,
+    getCognitoPublicKeys,
+    verifyToken,
+} from '@muhammad-mubeen-hamid/marhaba-commons';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { updateProfile } from '../service/profile-service';
 
+const jwksUrl = `https://cognito-idp.${process.env.REGION}.amazonaws.com/${process.env.USER_POOL_ID}/.well-known/jwks.json`;
+
 export const handler = async (event: APIGatewayProxyEvent) => {
-    console.log('header', event.headers);
+    console.log('header', event.headers.Authorization);
+    const keys = await getCognitoPublicKeys(jwksUrl);
+
+    if (!event.headers.Authorization) {
+        const failureResponse: AppResponseFailureBody = {
+            message: CognitoCodes.NO_TOKEN,
+            success: false,
+        };
+        const body = JSON.stringify(SendResponse({
+            body: failureResponse,
+            statusCode: 400,
+        }));
+
+        return {
+            body: body,
+            statusCode: 400,
+        };
+    }
+
+    const data = verifyToken(event.headers.Authorization, keys);
+
+    if (!data) {
+        const failureResponse: AppResponseFailureBody = {
+            message: CognitoCodes.INVALID_TOKEN,
+            success: false,
+        };
+        const body = JSON.stringify(SendResponse({
+            body: failureResponse,
+            statusCode: 400,
+        }));
+
+        return {
+            body: body,
+            statusCode: 400,
+        };
+    }
+
+    const { email } = data;
+
     const { pathParameters } = event;
     if (!pathParameters) {
         const failureResponse: AppResponseFailureBody = {
@@ -41,7 +89,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
 
     const profile = JSON.parse(body) as Profile;
 
-    const response = await updateProfile(profile);
+    const response = await updateProfile(email, profile);
 
     return {
         body: JSON.stringify(response.body),
