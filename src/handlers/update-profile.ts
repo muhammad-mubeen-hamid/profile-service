@@ -3,6 +3,7 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 import { updateProfile } from '../service/profile-service';
 
 export const handler = async (event: APIGatewayProxyEvent) => {
+    console.log('header', event.headers);
     const { pathParameters } = event;
     if (!pathParameters) {
         const failureResponse: AppResponseFailureBody = {
