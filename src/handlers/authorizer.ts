@@ -1,5 +1,5 @@
 import { APIGatewayTokenAuthorizerEvent, AuthResponse, PolicyDocument } from 'aws-lambda';
-import { ParsedJWK, getCognitoPublicKeys, getSecretFromSM, verifyToken } from '@muhammad-mubeen-hamid/marhaba-commons';
+import { ParsedJWK, getCognitoPublicKeys, verifyToken } from '@muhammad-mubeen-hamid/marhaba-commons';
 
 const jwksUrl = `https://cognito-idp.${process.env.REGION}.amazonaws.com/${process.env.USER_POOL_ID}/.well-known/jwks.json`;
 
@@ -32,8 +32,6 @@ exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthRes
     }
 
     try {
-        const dataaa = await getSecretFromSM('marhaba/secret');
-        console.log('dataaa:', dataaa);
         console.log('Retrieving Cognito public keys');
         if (!cachedKeys) {
             console.log('Fetching Cognito public keys');
