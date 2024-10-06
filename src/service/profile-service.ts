@@ -45,7 +45,6 @@ export const updateProfile = async (email: string, profile: Profile): Promise<Ap
             });
         }
 
-
         const savedProfile = await updateProfileUsingRepository(profile);
         const success: AppResponseSuccessBody<Profile> = {
             data: savedProfile,
