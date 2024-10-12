@@ -54,16 +54,15 @@ export const upsertProfileUsingRepository = async (profile: Profile): Promise<Pr
 
     console.log('Upserting profile:', profile);
 
-    // Prepare the update parameters
     const updateParams: UpdateItemCommandInput = {
         ExpressionAttributeValues: marshall({
             ':contactNumber': profile.contactNumber,
-            ':createdAt': profile.createdAt || modifiedAt, // If profile is new, set created_at
+            ':createdAt': profile.createdAt || modifiedAt,
             ':email': profile.email,
-            ':modifiedAt': modifiedAt, // Always update modified_at
+            ':modifiedAt': modifiedAt,
         }),
-        Key: marshall({ profileId: profile.email }), // Primary key for the profile
-        ReturnValues: 'ALL_NEW', // Return the updated profile
+        Key: marshall({ profileId: profile.email }),
+        ReturnValues: 'ALL_NEW',
         TableName: tableName,
         UpdateExpression: `SET email = :email, contactNumber = :contactNumber, 
         createdAt = if_not_exists(createdAt, :createdAt), modifiedAt = :modifiedAt`,
