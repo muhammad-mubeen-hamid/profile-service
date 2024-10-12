@@ -61,9 +61,8 @@ export const upsertProfileUsingRepository = async (profile: Profile): Promise<Pr
             ':createdAt': profile.createdAt || modifiedAt, // If profile is new, set created_at
             ':email': profile.email,
             ':modifiedAt': modifiedAt, // Always update modified_at
-            ':profileId': profile.profileId,
         }),
-        Key: marshall({ profileId: profile.profileId }), // Primary key for the profile
+        Key: marshall({ profileId: profile.email }), // Primary key for the profile
         ReturnValues: 'ALL_NEW', // Return the updated profile
         TableName: tableName,
         UpdateExpression: `SET profileId= :profileId, email = :email, contactNumber = :contactNumber, 
