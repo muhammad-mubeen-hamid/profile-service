@@ -59,11 +59,13 @@ export const upsertProfileUsingRepository = async (profile: Profile): Promise<Pr
             ':email': profile.email,
             ':modifiedAt': modifiedAt, // Always update modified_at
             ':phone': profile.contactNumber,
+            ':profileId': profile.profileId,
         }),
         Key: marshall({ profileId: profile.profileId }), // Primary key for the profile
         ReturnValues: 'ALL_NEW', // Return the updated profile
         TableName: tableName,
-        UpdateExpression: `SET email = :email, phone = :phone, created_at = if_not_exists(created_at, :created_at), modified_at = :modified_at`,
+        UpdateExpression: `SET profileId= :profileId, email = :email, phone = :phone, 
+        created_at = if_not_exists(created_at, :created_at), modified_at = :modified_at`,
     };
 
     // Execute the update command
