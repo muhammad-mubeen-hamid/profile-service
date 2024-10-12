@@ -52,6 +52,8 @@ export const upsertProfileUsingRepository = async (profile: Profile): Promise<Pr
 
     const modifiedAt = new Date().toISOString();
 
+    console.log('Upserting profile:', profile);
+
     // Prepare the update parameters
     const updateParams: UpdateItemCommandInput = {
         ExpressionAttributeValues: marshall({

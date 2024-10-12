@@ -1,6 +1,7 @@
 import {
     AppResponseFailureBody,
     CognitoCodes,
+    ParsedJWK,
     Profile,
     ProfileCodes,
     SendResponse,
@@ -11,10 +12,13 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 import { updateProfile } from '../service/profile-service';
 
 const jwksUrl = `https://cognito-idp.${process.env.REGION}.amazonaws.com/${process.env.USER_POOL_ID}/.well-known/jwks.json`;
+let keys: ParsedJWK[] | null = null;
 
 export const handler = async (event: APIGatewayProxyEvent) => {
-    console.log('header', event.headers.Authorization);
-    const keys = await getCognitoPublicKeys(jwksUrl);
+    console.log('header', event.headers);
+    if (!keys) {
+        keys = await getCognitoPublicKeys(jwksUrl);
+    }
 
     if (!event.headers.Authorization) {
         const failureResponse: AppResponseFailureBody = {
@@ -23,12 +27,12 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         };
         const body = JSON.stringify(SendResponse({
             body: failureResponse,
-            statusCode: 400,
+            statusCode: 401,
         }));
 
         return {
             body: body,
-            statusCode: 400,
+            statusCode: 401,
         };
     }
 
