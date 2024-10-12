@@ -114,7 +114,7 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !Ref ProfileResource
-      PathPart: "{profileId}"
+      PathPart: "{userSubId}"
       RestApiId: !Ref Api
 
   # GET
