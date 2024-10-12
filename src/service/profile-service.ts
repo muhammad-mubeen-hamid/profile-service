@@ -1,4 +1,4 @@
-// service/profile-service.ts
+// service/profile-service.ts\
 import {
     AppResponse,
     AppResponseSuccessBody,
@@ -6,7 +6,7 @@ import {
     ProfileCodes,
     SendResponse,
 } from '@muhammad-mubeen-hamid/marhaba-commons';
-import { getProfileUsingRepository, updateProfileUsingRepository } from '../repository/profile-repository';
+import { getProfileUsingRepository, upsertProfileUsingRepository } from '../repository/profile-repository';
 import { HttpStatusCode } from 'axios';
 
 export const getProfile = async (email: string): Promise<AppResponse<Profile | null>> => {
@@ -45,7 +45,7 @@ export const updateProfile = async (email: string, profile: Profile): Promise<Ap
             });
         }
 
-        const savedProfile = await updateProfileUsingRepository(profile);
+        const savedProfile = await upsertProfileUsingRepository(profile);
         const success: AppResponseSuccessBody<Profile> = {
             data: savedProfile,
             message: ProfileCodes.PROFILE_UPDATED,

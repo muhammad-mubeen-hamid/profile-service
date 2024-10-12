@@ -1,4 +1,4 @@
-import { DynamoDBClient, GetItemCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, GetItemCommand, UpdateItemCommand, UpdateItemCommandInput } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Profile } from '@muhammad-mubeen-hamid/marhaba-commons';
 
@@ -27,7 +27,7 @@ export const getProfileUsingRepository = async (
     const client = getDBClient();
 
     const params = {
-        Key: marshall({ email }),
+        Key: marshall({ profileId: email }), // Ensure key attribute name matches PK
         TableName: tableName,
     };
 
@@ -40,25 +40,36 @@ export const getProfileUsingRepository = async (
     return null;
 };
 
-export const updateProfileUsingRepository = async (
-    profile: Profile,
-): Promise<Profile> => {
-    const client = getDBClient();
+/**
+ * Upserts a profile into DynamoDB.
+ * If the profile exists, it updates the existing profile, otherwise, it creates a new one.
+ *
+ * @returns Promise<Profile> - The upserted profile
+ * @param profile
+ */
+export const upsertProfileUsingRepository = async (profile: Profile): Promise<Profile> => {
+    const dbClient = getDBClient();
 
-    const params = {
-        Item: marshall({
-            email: profile.email,
-            phone: profile.phone,
-            profileId: profile.id,
+    const modifiedAt = new Date().toISOString();
+
+    // Prepare the update parameters
+    const updateParams: UpdateItemCommandInput = {
+        ExpressionAttributeValues: marshall({
+            ':createdAt': profile.createdAt || modifiedAt, // If profile is new, set created_at
+            ':email': profile.email,
+            ':modifiedAt': modifiedAt, // Always update modified_at
+            ':phone': profile.contactNumber,
         }),
+        Key: marshall({ profileId: profile.profileId }), // Primary key for the profile
+        ReturnValues: 'ALL_NEW', // Return the updated profile
         TableName: tableName,
+        UpdateExpression: `SET email = :email, phone = :phone, created_at = if_not_exists(created_at, :created_at), modified_at = :modified_at`,
     };
 
-    console.log('params', params);
-
-    const command = new PutItemCommand(params);
-    const response = await client.send(command);
-    console.log('response', response);
+    // Execute the update command
+    const command = new UpdateItemCommand(updateParams);
+    const response = await dbClient.send(command);
+    console.log('Upserted profile:', response);
 
     return profile;
 };
