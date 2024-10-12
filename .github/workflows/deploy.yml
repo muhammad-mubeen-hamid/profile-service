@@ -46,8 +46,8 @@ jobs:
 
       - name: Clear S3 Code and Layer
         run: |
-          aws s3 rm "s3://${{ env.CodeBucket }}" --recursive
-          aws s3 rm "s3://${{ env.CodeBucket }}/layers" --recursive
+          aws s3 rm "s3://${{ env.CodeBucket }}/${{ env.ServiceName }}" --recursive
+          aws s3 rm "s3://${{ env.CodeBucket }}/layers/${{ env.ServiceName }}" --recursive
 
       - name: Get current time
         id: current_time
