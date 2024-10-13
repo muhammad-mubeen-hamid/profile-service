@@ -7,7 +7,6 @@ import {
     SendResponse,
 } from '@muhammad-mubeen-hamid/marhaba-commons';
 import { getProfileUsingRepository, upsertProfileUsingRepository } from '../repository/profile-repository';
-import { HttpStatusCode } from 'axios';
 
 export const getProfile = async (email: string): Promise<AppResponse<Profile | null>> => {
     try {
@@ -43,16 +42,6 @@ export const updateProfile = async (email: string, profile: Profile): Promise<Ap
     try {
         const existingProfile = await getProfile(email);
         console.log('existingProfile:', existingProfile);
-
-        if (existingProfile.statusCode !== HttpStatusCode.Ok) {
-            return SendResponse({
-                body: {
-                    message: ProfileCodes.PROFILE_NOT_FOUND,
-                    success: false,
-                },
-                statusCode: 404,
-            });
-        }
 
         const savedProfile = await upsertProfileUsingRepository(profile);
         const success: AppResponseSuccessBody<Profile> = {
