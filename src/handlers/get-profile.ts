@@ -20,16 +20,16 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         };
     }
 
-    const { profileId } = pathParameters;
+    const { userSubId } = pathParameters;
 
-    if (!profileId) {
+    if (!userSubId) {
         return {
             body: pathParam,
             statusCode: 400,
         };
     }
 
-    const response = await getProfile(profileId);
+    const response = await getProfile(userSubId);
 
     return {
         body: JSON.stringify(response.body),

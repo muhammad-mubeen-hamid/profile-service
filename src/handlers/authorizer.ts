@@ -19,6 +19,18 @@ const generatePolicy = (principalId: string, effect: 'Allow' | 'Deny', resource:
     };
 };
 
+const extractUserIdFromPath = (methodArn: string): string | null => {
+    const index = 1;
+    console.log('Extracting userId from path:', methodArn);
+    // Example: arn:aws:execute-api:{region}:{account-id}:{api-id}/{stage}/{method}/{path}
+    const path = methodArn.split('/').pop();
+    console.log('Path:', path);
+    if (!path) return null;
+    const userId = path.split('/')[index]; // Assuming the userId is the second part of the path
+    console.log('Extracted userId:', userId);
+    return userId;
+};
+
 exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthResponse> => {
     console.log('Event received:', event);
 
@@ -51,6 +63,25 @@ exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthRes
 
         console.log('Token verified successfully:', decoded);
         const userId = decoded.sub;
+
+        const userIdFromPath = extractUserIdFromPath(event.methodArn); // Implement this
+
+        if (!userIdFromPath) {
+            console.log('No userId found in path');
+            return {
+                policyDocument: generatePolicy(userId, 'Deny', event.methodArn),
+                principalId: userId,
+            };
+        }
+
+        // Check if the authenticated user is trying to access their own resource
+        if (userId !== userIdFromPath) {
+            console.log(`Access denied: ${userId} cannot access resource of ${userIdFromPath}`);
+            return {
+                policyDocument: generatePolicy(userId, 'Deny', event.methodArn),
+                principalId: userId,
+            };
+        }
 
         return {
             context: {
