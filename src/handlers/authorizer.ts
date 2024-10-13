@@ -77,6 +77,7 @@ exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthRes
             };
         }
 
+        console.log(`|:===> ALL SYSTEMS GO FOR ${userId} <===:|`);
         return {
             context: {
                 email: decoded.email,
