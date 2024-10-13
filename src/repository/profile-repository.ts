@@ -1,4 +1,10 @@
-import { DynamoDBClient, GetItemCommand, UpdateItemCommand, UpdateItemCommandInput } from '@aws-sdk/client-dynamodb';
+import {
+    DynamoDBClient,
+    GetItemCommand,
+    GetItemCommandInput,
+    UpdateItemCommand,
+    UpdateItemCommandInput,
+} from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { Profile } from '@muhammad-mubeen-hamid/marhaba-commons';
 
@@ -26,13 +32,15 @@ export const getProfileUsingRepository = async (
 ): Promise<Profile | null> => {
     const client = getDBClient();
 
-    const params = {
+    const params: GetItemCommandInput = {
         Key: marshall({ profileId: email }), // Ensure key attribute name matches PK
         TableName: tableName,
     };
 
     const command = new GetItemCommand(params);
     const result = await client.send(command);
+
+    console.log('Result:', result);
 
     if (result.Item) {
         return unmarshall(result.Item) as Profile;
