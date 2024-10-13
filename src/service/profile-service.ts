@@ -12,6 +12,15 @@ import { HttpStatusCode } from 'axios';
 export const getProfile = async (email: string): Promise<AppResponse<Profile | null>> => {
     try {
         const profile = await getProfileUsingRepository(email);
+        if (!profile) {
+            return SendResponse({
+                body: {
+                    message: ProfileCodes.PROFILE_NOT_FOUND,
+                    success: false,
+                },
+                statusCode: 404,
+            });
+        }
         const success: AppResponseSuccessBody<Profile | null> = {
             data: profile,
             message: ProfileCodes.ALL_OKAY,

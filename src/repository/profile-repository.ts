@@ -56,7 +56,7 @@ export const getProfileUsingRepository = async (
  * @param profile
  */
 export const upsertProfileUsingRepository = async (profile: Profile): Promise<Profile> => {
-    const dbClient = getDBClient();
+    const client = getDBClient();
 
     const modifiedAt = new Date().toISOString();
 
@@ -78,7 +78,7 @@ export const upsertProfileUsingRepository = async (profile: Profile): Promise<Pr
 
     // Execute the update command
     const command = new UpdateItemCommand(updateParams);
-    const response = await dbClient.send(command);
+    const response = await client.send(command);
     console.log('Upserted profile:', response);
 
     return profile;
