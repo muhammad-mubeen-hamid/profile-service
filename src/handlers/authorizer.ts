@@ -70,7 +70,7 @@ exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthRes
 
         // Check if the authenticated user is trying to access their own resource
         if (userId !== userIdFromPath) {
-            console.log(`Access denied: ${userId} cannot access resource of ${userIdFromPath}`);
+            console.log(`Access denied: ${userIdFromPath} cannot access resource of ${userId}`);
             return {
                 policyDocument: generatePolicy(userId, 'Deny', event.methodArn),
                 principalId: userId,
