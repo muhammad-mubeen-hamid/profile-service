@@ -55,7 +55,7 @@ exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthRes
             };
         }
 
-        console.log('Token verified successfully:', decoded);
+        console.log('|:===> Token verified successfully <===:|');
         const userId = decoded.sub;
 
         const userIdFromPath = extractUserIdFromPath(event.methodArn); // Implement this
