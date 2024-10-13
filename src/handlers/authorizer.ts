@@ -19,16 +19,10 @@ const generatePolicy = (principalId: string, effect: 'Allow' | 'Deny', resource:
     };
 };
 
-const extractUserIdFromPath = (methodArn: string): string | null => {
-    const index = 1;
+const extractUserIdFromPath = (methodArn: string): string | undefined => {
     console.log('Extracting userId from path:', methodArn);
     // Example: arn:aws:execute-api:{region}:{account-id}:{api-id}/{stage}/{method}/{path}
-    const path = methodArn.split('/').pop();
-    console.log('Path:', path);
-    if (!path) return null;
-    const userId = path.split('/')[index]; // Assuming the userId is the second part of the path
-    console.log('Extracted userId:', userId);
-    return userId;
+    return methodArn.split('/').pop();
 };
 
 exports.handler = async (event: APIGatewayTokenAuthorizerEvent): Promise<AuthResponse> => {
