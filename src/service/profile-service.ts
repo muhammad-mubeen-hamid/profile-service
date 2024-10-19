@@ -43,7 +43,7 @@ export const updateProfile = async (email: string, profile: Profile): Promise<Ap
         const existingProfile = await getProfile(email);
         console.log('existingProfile:', existingProfile);
 
-        const savedProfile = await upsertProfileUsingRepository(profile);
+        const savedProfile = await upsertProfileUsingRepository(email, profile);
         const success: AppResponseSuccessBody<Profile> = {
             data: savedProfile,
             message: ProfileCodes.PROFILE_UPDATED,
