@@ -53,9 +53,10 @@ export const getProfileUsingRepository = async (
  * If the profile exists, it updates the existing profile, otherwise, it creates a new one.
  *
  * @returns Promise<Profile> - The upserted profile
- * @param profile
+ * @param email - The email of the profile - acts as the primary key
+ * @param profile - The profile to upsert
  */
-export const upsertProfileUsingRepository = async (profile: Profile): Promise<Profile> => {
+export const upsertProfileUsingRepository = async (email: string, profile: Profile): Promise<Profile> => {
     const client = getDBClient();
 
     const modifiedAt = new Date().toISOString();
@@ -69,7 +70,7 @@ export const upsertProfileUsingRepository = async (profile: Profile): Promise<Pr
             ':email': profile.email,
             ':modifiedAt': modifiedAt,
         }),
-        Key: marshall({ profileId: profile.email }),
+        Key: marshall({ profileId: email }),
         ReturnValues: 'ALL_NEW',
         TableName: tableName,
         UpdateExpression: `SET email = :email, contactNumber = :contactNumber, 

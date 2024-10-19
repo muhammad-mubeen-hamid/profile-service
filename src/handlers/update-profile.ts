@@ -67,6 +67,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
             statusCode: 400,
         }));
 
+        // lambda response
         return {
             body: body,
             statusCode: 400,
@@ -85,6 +86,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
             statusCode: 400,
         }));
 
+        // lambda response
         return {
             body: body,
             statusCode: 400,
@@ -95,6 +97,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
 
     const response = await updateProfile(email, profile);
 
+    // lambda response
     return {
         body: JSON.stringify(response.body),
         statusCode: response.statusCode,
