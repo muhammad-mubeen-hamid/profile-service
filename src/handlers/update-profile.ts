@@ -14,7 +14,7 @@ import { updateProfile } from '../service/profile-service';
 const jwksUrl = `https://cognito-idp.${process.env.REGION}.amazonaws.com/${process.env.USER_POOL_ID}/.well-known/jwks.json`;
 let keys: ParsedJWK[] | null = null;
 
-export const handler = async (event: APIGatewayProxyEvent) => {
+exports.handler = async (event: APIGatewayProxyEvent) => {
     console.log('header', event.headers);
     if (!keys) {
         keys = await getCognitoPublicKeys(jwksUrl);
@@ -92,6 +92,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
             statusCode: 400,
         };
     }
+
+    console.log('body', body);
 
     const profile = JSON.parse(body) as Profile;
 
