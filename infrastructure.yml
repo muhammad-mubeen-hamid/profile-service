@@ -42,7 +42,7 @@ Resources:
   # ============================================================================================================================================================
 
   # update profile by id post method model
-  ProfileByIdSchemaModel:
+  ProfileByIdSchemaModel1:
     Type: AWS::ApiGateway::Model
     Properties:
       RestApiId: !Ref Api
@@ -170,7 +170,7 @@ Resources:
       RequestParameters:
         method.request.path.userSubId: true
       RequestModels:
-        application/json: !Ref ProfileByIdSchemaModel
+        application/json: !Ref ProfileByIdSchemaModel1
 
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
