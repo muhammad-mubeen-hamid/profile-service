@@ -42,7 +42,7 @@ Resources:
   # ============================================================================================================================================================
 
   # update profile by id post method model
-  ProfileByIdPostMethodSchemaModel:
+  ProfileByIdSchemaModel:
     Type: AWS::ApiGateway::Model
     Properties:
       RestApiId: !Ref Api
@@ -58,6 +58,19 @@ Resources:
           createdAt:
             type: string
             format: date-time
+          firstName:
+            type: string
+          lastName:
+            type: string
+          dateOfBirth:
+            type: string
+            format: date
+          countryOfOrigin:
+            type: string
+          spokenLanguages:
+            type: array
+            items:
+              type: string
         required:
           - email
         additionalProperties: false
@@ -157,7 +170,7 @@ Resources:
       RequestParameters:
         method.request.path.userSubId: true
       RequestModels:
-        application/json: !Ref ProfileByIdPostMethodSchemaModel
+        application/json: !Ref ProfileByIdSchemaModel
 
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment

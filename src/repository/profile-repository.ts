@@ -58,7 +58,6 @@ export const getProfileUsingRepository = async (
  */
 export const upsertProfileUsingRepository = async (email: string, profile: Profile): Promise<Profile> => {
     const client = getDBClient();
-
     const modifiedAt = new Date().toISOString();
 
     console.log('Upserting profile:', profile);
@@ -66,21 +65,37 @@ export const upsertProfileUsingRepository = async (email: string, profile: Profi
     const updateParams: UpdateItemCommandInput = {
         ExpressionAttributeValues: marshall({
             ':contactNumber': profile.contactNumber,
+            ':countryOfOrigin': profile.countryOfOrigin ?? null,
             ':createdAt': profile.createdAt || modifiedAt,
-            ':email': profile.email,
+            ':dateOfBirth': profile.dateOfBirth ?? null,
+            ':firstName': profile.firstName ?? null,
+            ':lastName': profile.lastName ?? null,
             ':modifiedAt': modifiedAt,
+            ':spokenLanguages': profile.spokenLanguages || [],
         }),
         Key: marshall({ profileId: email }),
         ReturnValues: 'ALL_NEW',
         TableName: tableName,
-        UpdateExpression: `SET email = :email, contactNumber = :contactNumber, 
-        createdAt = if_not_exists(createdAt, :createdAt), modifiedAt = :modifiedAt`,
+        UpdateExpression: `
+            SET contactNumber = :contactNumber,
+                createdAt = if_not_exists(createdAt, :createdAt), 
+                modifiedAt = :modifiedAt,
+                firstName = :firstName,
+                lastName = :lastName,
+                dateOfBirth = :dateOfBirth,
+                countryOfOrigin = :countryOfOrigin,
+                spokenLanguages = :spokenLanguages
+        `,
     };
 
-    // Execute the update command
-    const command = new UpdateItemCommand(updateParams);
-    const response = await client.send(command);
-    console.log('Upserted profile:', response);
+    try {
+        const command = new UpdateItemCommand(updateParams);
+        const response = await client.send(command);
+        console.log('Upserted profile:', response);
 
-    return profile;
+        return profile;
+    } catch (error) {
+        console.error('Error upserting profile:', error);
+        throw error;
+    }
 };

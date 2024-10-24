@@ -658,10 +658,10 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/retry/-/retry-0.3.0.tgz#6d86b8cb322660f03d3f0aa94b99bdd8e172d570"
   integrity sha512-d2CGZR2o7fS6sWB7DG/3a95bGKQyHMACZ5aW8qGkkqQpUoZV6C0X7Pc7l4ZNMZkfNBf4VWNe9E1jRsf0G146Ew==
 
-"@muhammad-mubeen-hamid/marhaba-commons@^1.0.6-r":
-  version "1.0.6-r"
-  resolved "https://npm.pkg.github.com/download/@muhammad-mubeen-hamid/marhaba-commons/1.0.6-r/64e906ca3ae30c3aa7adadd661714d0ee94b168c#64e906ca3ae30c3aa7adadd661714d0ee94b168c"
-  integrity sha512-S9gXe1BFJkVFSycXbMxL/0wo7Sn6U7smJR9ArtdkD5dkrFTgONtc+ScQS3lXcypsdFAqqwrurpyAdfpAhBAIYg==
+"@muhammad-mubeen-hamid/marhaba-commons@^1.0.6-t":
+  version "1.0.6-u"
+  resolved "https://npm.pkg.github.com/download/@muhammad-mubeen-hamid/marhaba-commons/1.0.6-u/d73dcea0cd26ff33ec5e46ddf37c4f0c60599f1d#d73dcea0cd26ff33ec5e46ddf37c4f0c60599f1d"
+  integrity sha512-EhoyEK0kRArvgCZVrCDKBeBasWNmmSIrxwPp/+9YQ+y6AjM1fD0X0P3HwT7VINqG9sL0/ftkwhrGxyjE37BtVQ==
   dependencies:
     axios "^1.7.7"
     jsonwebtoken "^9.0.2"
