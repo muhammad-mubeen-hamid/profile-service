@@ -169,8 +169,8 @@ Resources:
       RequestValidatorId: !Ref ProfileByIdPostMethodValidator
       RequestParameters:
         method.request.path.userSubId: true
-      RequestModels:
-        application/json: !Ref ProfileByIdSchemaModel1
+  #      RequestModels:
+  #        application/json: !Ref ProfileByIdSchemaModel1
 
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
